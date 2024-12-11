@@ -150,8 +150,80 @@ strong {
   text-align: right;
   color: var(--secondary-color);
   font-weight: bold;
+  margin-bottom: 1rem;
 }
 
 .progress-percentage {
   font-size: 1.2rem;
+}
+
+/* Стили для дневника обучения */
+.diary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.diary-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.diary-date input {
+  padding: 0.5rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: 4px;
+  width: 200px;
+}
+
+.diary-content textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.diary-button {
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.diary-button:hover {
+  background-color: var(--primary-color);
+}
+
+.diary-history {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-entry {
+  border-left: 3px solid var(--secondary-color);
+  padding: 0.5rem 1rem;
+  background-color: var(--code-background);
+  border-radius: 0 4px 4px 0;
+}
+
+.history-date {
+  font-weight: bold;
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+}
+
+.history-content {
+  white-space: pre-wrap;
+}
+
+.export-container {
+  display: flex;
+  justify-content: flex-end;
 }

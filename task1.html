@@ -13,6 +13,8 @@
     <script>
       hljs.highlightAll();
     </script>
+    <script src="completed-topics.js"></script>
+    <script src="progress.json" type="application/json"></script>
     <script src="task1.js"></script>
   </head>
   <body>
@@ -87,7 +89,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="switch" />
-                Ко��струкция "switch"
+                Кострукция "switch"
               </label>
             </div>
 
@@ -103,7 +105,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="arrow_functions" />
-                Стрелочные функции, основы
+                Стрелочные фун��ции, основы
               </label>
             </div>
 
@@ -135,7 +137,7 @@
               </label>
             </div>
 
-            <h3>Объекты</h3>
+            <h3>Объ��кты</h3>
             <div class="topic-list">
               <label class="topic-item">
                 <input type="checkbox" data-topic="object_basics" />
@@ -167,7 +169,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="object_to_primitive" />
-                Преобразование объектов в примитивы
+                Пребразование объектов в примитивы
               </label>
             </div>
 
@@ -319,7 +321,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="private_protected" />
-                Приватные и защищённые методы и свойства
+                Приватные и защищённы�� методы и свойства
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="extend_natives" />
@@ -457,6 +459,11 @@
             <div class="progress-info">
               <span class="progress-percentage">0%</span> тем изучено
             </div>
+            <div class="export-container">
+              <button id="exportProgress" class="diary-button">
+                Экспортировать прогресс
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -491,7 +498,7 @@
             <li><strong>string</strong> - для строк</li>
             <li><strong>boolean</strong> - для true/false</li>
             <li><strong>null</strong> - для неизвестных значений</li>
-            <li><strong>undefined</strong> - для неприсвоенных значений</li>
+            <li><strong>undefined</strong> - для непрсвоенных значений</li>
             <li><strong>symbol</strong> - для уникальных идентификаторов</li>
           </ul>
           <h3>Объектный тип:</h3>
@@ -546,7 +553,7 @@ typeof declaredVar    // "undefined"</code></pre>
             </li>
             <li>
               <strong>массивы:</strong> возвращает "object" - для определения
-              масси��а лучше использовать Array.isArray()
+              массива лучше использовать Array.isArray()
             </li>
             <li>
               <strong>функции:</strong> единственный случай, когда typeof
@@ -585,7 +592,7 @@ function processValue(value) {
 
 // Ограничения:
 // Не различает разные типы объектов (массивы, даты и т.д.)
-// Возвращает неправильный результат для null
+// ��озвращает неправильный результат для null
 // Не может определить тип NaN (возвращает "number")</code></pre>
         </div>
       </section>
@@ -621,7 +628,7 @@ function processValue(value) {
           <div class="principle">
             <h4>Инкапсуляция</h4>
             <p>
-              Объединение данных и методов для работы с ними в единый объект и
+              Объединение данных и методов для работы с ними в единую объект и
               скрытие деталей реализации.
             </p>
             <pre><code class="language-javascript">class BankAccount {
@@ -667,7 +674,7 @@ class Dog extends Animal {
             <h4>Полиморфизм</h4>
             <p>
               Возможность использовать объекты с одинаковым интерфейсом без
-              информации о типе и внутренней структуре объекта.
+              информации о типе и внутренн��й структуре объекта.
             </p>
             <pre><code class="language-javascript">class Shape {
     area() {
@@ -756,14 +763,14 @@ function executeQuery(database, sql) {
           </p>
 
           <h4>Порядок выполнения кода в JavaScript</h4>
-          <p>JavaScript выполняется в два этапа:</p>
+          <p>JavaScript выпол��яется в два этапа:</p>
           <ol>
             <li>
               <strong>Фаза создания</strong> - создаётся контекст выполнения,
               выделяется память для переменных и функций
             </li>
             <li>
-              <strong>Фаза выполнения</strong> - код выполняется ��острочно,
+              <strong>Фаза выполнения</strong> - код выполняется строчно,
               переменным присваиваются значения
             </li>
           </ol>
@@ -789,7 +796,7 @@ console.log(x);  // 5</code></pre>
 
           <h5>let и const:</h5>
           <ul>
-            <li>Тоже всплывают, но остаются в "временной мёртвой зоне"</li>
+            <li>То��е всплывают, но остаются в "временной мёртвой зоне"</li>
             <li>Нельзя использовать до объявления (получим ReferenceError)</li>
             <li>Имеют блочную область видимости</li>
           </ul>
@@ -917,7 +924,7 @@ let x = 5;
             </li>
             <li>
               <strong>Функциональная область видимости</strong> - переменные
-              доступны только внутри функции
+              доступны только внутр�� функции
             </li>
             <li>
               <strong>Блочная область видимости</strong> - переменные let и
@@ -983,7 +990,7 @@ function multiply(x) {
           <h3>Контекст выполнения (this)</h3>
           <p>
             Значение this определяется тем, как функция вызывается, а не где она
-            о��ределена.
+            оределена.
           </p>
           <pre><code class="language-javascript">const user = {
     name: 'Иван',
@@ -1026,7 +1033,7 @@ user.sayHi(); // "Привет, я Иван"
 
 // Связь с прототипами
 User.prototype.greet = function() {
-    console.log(`Здравствуйте, ${this.name}`);
+    console.log(`Здр��вствуйте, ${this.name}`);
 };</code></pre>
         </div>
 
@@ -1092,7 +1099,7 @@ console.log(counter.decrement()); // 1</code></pre>
           <p>
             При каждом вызове <code>createCounter()</code> создаётся новое
             лексическое окружение со своей переменной count. Возвращаемая
-            функция сохраняет ссылку именно на то окружение, в котором она была
+            функция сохраняет ��сылку именно на то окружение, в котором она была
             создана, поэтому разные счётчики работают независимо.
           </p>
 
@@ -1126,7 +1133,7 @@ baz();  // 10</code></pre>
             Когда код пытается получить доступ к переменной, JavaScript ищет её:
           </p>
           <ol>
-            <li>В текущей области видимости</li>
+            <li>В текущей области ��идимости</li>
             <li>Если не находит, ищет во внешней области видимости</li>
             <li>Продолжает поиск вверх до глобальной области</li>
             <li>Если переменная не найдена, возвращает ReferenceError</li>
@@ -1139,7 +1146,7 @@ function outer() {
     function inner() {
         let c = 'из inner';
         
-        // У inner есть доступ ко всем переменным
+        // У inner есть доступ ко все�� переменным
         console.log(c);  // из inner
         console.log(b);  // из outer
         console.log(a);  // глобальная
@@ -1166,6 +1173,137 @@ console.log(c);     // ReferenceError: c is not defined</code></pre>
             переменным той области, в которой она была опредена, независимо от
             того, где она вызывается.
           </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Прототипы и наследование в JavaScript</h2>
+        <div class="card">
+          <h3>Прототипы</h3>
+          <p>
+            В JavaScript каждый объект имеет внутреннее свойство [[Prototype]],
+            которое создает связь с другим объектом. Это свойство формирует
+            основу прототипного наследования.
+          </p>
+
+          <h4>Основные концепции:</h4>
+          <ul>
+            <li>
+              <strong>[[Prototype]]</strong> - внутреннее свойство объекта,
+              доступное через <code>__proto__</code>
+            </li>
+            <li>
+              <strong>Цепочка прототипов</strong> - последовательность связанных
+              объектов через [[Prototype]]
+            </li>
+            <li>
+              <strong>Встроенные прототипы</strong> - Array.prototype,
+              Object.prototype и другие
+            </li>
+          </ul>
+
+          <pre><code class="language-javascript">// Пример прототипного наследования
+const animal = {
+    eats: true,
+    walk() {
+        console.log('Животное идет');
+    }
+};
+
+const rabbit = {
+    jumps: true,
+    __proto__: animal
+};
+
+rabbit.walk(); // Животное идет (метод взят из прототипа)
+console.log(rabbit.eats); // true (свойство взято из прототипа)</code></pre>
+
+          <h4>Наследование через прототипы:</h4>
+          <ul>
+            <li>Объекты наследуют свойства и методы от своих прототипов</li>
+            <li>Поиск свойств идет по цепочке прототипов</li>
+            <li>
+              Можно добавлять методы в прототипы (не рекомендуется для
+              встроенных объектов)
+            </li>
+          </ul>
+
+          <h3>Ключевое слово super</h3>
+          <p>
+            super используется в классах для доступа к методам и свойствам
+            родительского класса.
+          </p>
+
+          <pre><code class="language-javascript">class Animal {
+    constructor(name) {
+        this.name = name;
+    }
+    
+    speak() {
+        console.log(`${this.name} издает звук`);
+    }
+}
+
+class Dog extends Animal {
+    constructor(name) {
+        super(name); // Обязательный вызов конструктора родителя
+    }
+    
+    speak() {
+        super.speak(); // Вызов метода родителя
+        console.log(`${this.name} гавкает`);
+    }
+}</code></pre>
+
+          <h4>Особенности работы this:</h4>
+          <ul>
+            <li>Значение this определяется во время выполнения</li>
+            <li>
+              При использовании super контекст this сохраняется для текущего
+              объекта
+            </li>
+            <li>
+              Методы call, apply и bind позволяют управлять контекстом
+              выполнения
+            </li>
+          </ul>
+
+          <pre><code class="language-javascript">// Пример управления контекстом
+function greet() {
+    console.log(`Привет, я ${this.name}`);
+}
+
+const person = { name: 'Иван' };
+
+greet.call(person);  // Привет, я Иван
+greet.apply(person); // То же самое
+const boundGreet = greet.bind(person); // Создает новую функцию с привязанным контекстом
+boundGreet(); // Привет, я Иван</code></pre>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Днев��ик обучения</h2>
+        <div class="card">
+          <div class="diary-container">
+            <h3>Итоги дня</h3>
+            <div class="diary-entry">
+              <div class="diary-date">
+                <input type="date" id="entryDate" />
+              </div>
+              <div class="diary-content">
+                <textarea
+                  id="entryContent"
+                  placeholder="Опишите, что вы изучили сегодня..."
+                  rows="5"
+                ></textarea>
+              </div>
+              <button id="saveEntry" class="diary-button">Сохранить</button>
+            </div>
+
+            <h3>История записей</h3>
+            <div id="entriesHistory" class="diary-history"></div>
+          </div>
         </div>
       </section>
     </div>
