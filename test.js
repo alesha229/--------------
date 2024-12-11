@@ -1,21 +1,36 @@
-// let arr;
-// let baseNum = 2;
-// const enterNum = 200;
-// do {
-//   console.log(baseNum > 1 && baseNum % baseNum);
-//   if (baseNum > 1 && baseNum % baseNum) {
-//     arr.push(n);
-//     console.log("test");
+// function delay(ms) {
+//   return new Promise(function (resolve) {
+//     console.log(1); //обработка промиса
+//     setTimeout(resolve, ms);
+//   });
+// }
+// // delay(1000).then((result) => {
+// //   console.log(result + "f");
+// // });
+
+// function delay2(ms, func) {
+//   return new Promise(function (resolve) {
+//     setTimeout(
+//       function () {
+//         console.log(2);
+//         resolve(func()); //вызов функции выполнение которой задерживается
+//       },
+
+//       ms
+//     );
+//   });
+// }
+
+// delay2(1000, () => delay(1000));
+
+// async function fetchData() {
+//   try {
+//     let response = await fetch("https://api.example.com/data");
+//     let data = await response.jsonc;
+//     console.log(data);
+//   } catch (error) {
+//     console.log(error);
 //   }
-//   baseNum++;
-// } while (baseNum <= enterNum);
-// console.log(arr);
+// }
 
-let n = 34623463462;
-
-nextPrime: for (let i = 2; i <= n; i++) {
-  for (let j = 2; j < i; j++) {
-    if (i % j == 0) continue nextPrime;
-  }
-  console.log(i);
-}
+// fetchData();
