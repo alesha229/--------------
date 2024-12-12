@@ -16,6 +16,70 @@
     <script src="completed-topics.js"></script>
     <script src="task1.js"></script>
     <script>
+      // Функция для генерации оглавления
+      function generateTableOfContents() {
+        const toc = document.getElementById("toc");
+        const headings = document.querySelectorAll("h2, h3, h4");
+        const ul = document.createElement("ul");
+
+        headings.forEach((heading, index) => {
+          // Пропускаем заголовки из прогресса обучения
+          if (heading.closest(".progress-card")) {
+            return;
+          }
+
+          // Пропускаем заголовок самого оглавления
+          if (heading.parentElement.classList.contains("table-of-contents")) {
+            return;
+          }
+
+          // Создаем уникальный id для заголовка, если его нет
+          if (!heading.id) {
+            heading.id = `heading-${index}`;
+          }
+
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+
+          a.href = `#${heading.id}`;
+          a.textContent = heading.textContent;
+          a.classList.add(`toc-${heading.tagName.toLowerCase()}`);
+
+          // Добавляем обработчик клика для плавного скролла
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetHeading = document.getElementById(heading.id);
+            const targetSection =
+              targetHeading.closest(".card") ||
+              targetHeading.closest("section");
+
+            // Добавляем отступ при скролле
+            window.scrollTo({
+              top: targetHeading.offsetTop - 100, // 100px отступ сверху
+              behavior: "smooth",
+            });
+
+            // Добавляем подсветку всего блока
+            if (targetSection) {
+              targetSection.classList.add("highlight-section");
+              setTimeout(() => {
+                targetSection.classList.remove("highlight-section");
+              }, 2000);
+            }
+          });
+
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+
+        toc.appendChild(ul);
+      }
+
+      // Инициализация при загрузке страницы
+      document.addEventListener("DOMContentLoaded", () => {
+        generateTableOfContents();
+      });
+
       // Функция для загрузки прогресса
       async function loadProgress() {
         try {
@@ -108,7 +172,7 @@
         const today = new Date().toISOString().split("T")[0];
         dateInput.value = today;
 
-        // Загрузка истории из localStorage
+        // Загрузка истории ��з localStorage
         function loadHistory() {
           const history = JSON.parse(
             localStorage.getItem("diaryHistory") || "[]"
@@ -179,514 +243,622 @@
 
         loadHistory();
       });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const filesList = document.querySelector(".files-tree");
+        const fileContent = document.getElementById("file-code");
+        const currentFileName = document.getElementById("current-file");
+
+        // Объект с содержимым файлов для GitHub Pages
+        const filesContent = {
+          "test.js": `// function delay(ms) {
+            //   return new Promise(function (resolve) {
+            //     console.log(1); //обработка промиса
+            //     setTimeout(resolve, ms);
+            //   });
+            // }
+            // ... остальное содержимое test.js`,
+          // ... другие файлы
+        };
+
+        // Определяем, находимся ли мы на GitHub Pages
+        const isGitHubPages = window.location.hostname.includes("github.io");
+
+        filesList.addEventListener("click", async (e) => {
+          if (e.target.classList.contains("file")) {
+            const fileName = e.target.dataset.file;
+
+            // Убираем активный класс у всех файлов
+            document
+              .querySelectorAll(".file")
+              .forEach((f) => f.classList.remove("active"));
+            // Добавляем активный класс выбранному файлу
+            e.target.classList.add("active");
+
+            try {
+              let content;
+
+              if (isGitHubPages) {
+                // На GitHub Pages используем предзагруженное содержимое
+                content = filesContent[fileName];
+                if (!content) {
+                  throw new Error(
+                    "Файл не найден в предзагруженном содержимом"
+                  );
+                }
+              } else {
+                // Локально загружаем файлы из правильной директории
+                try {
+                  const response = await fetch(`./src/${fileName}`);
+                  if (response.ok) {
+                    content = await response.text();
+                  } else {
+                    // Пробуем загрузить из корневой директории
+                    const rootResponse = await fetch(`./${fileName}`);
+                    if (rootResponse.ok) {
+                      content = await rootResponse.text();
+                    } else {
+                      throw new Error(
+                        "Файл не найден в локальной файловой системе"
+                      );
+                    }
+                  }
+                } catch (error) {
+                  throw new Error(`Ошибка загрузки файла: ${error.message}`);
+                }
+              }
+
+              // Определяем язык подсветки синтаксиса
+              const extension = fileName.split(".").pop();
+              const language =
+                {
+                  js: "javascript",
+                  html: "html",
+                  css: "css",
+                }[extension] || "plaintext";
+
+              fileContent.className = `language-${language}`;
+              fileContent.textContent = content;
+              currentFileName.textContent = fileName;
+
+              // Обновляем подсветку синтаксиса
+              hljs.highlightElement(fileContent);
+            } catch (error) {
+              fileContent.textContent = `Ошибка: ${error.message}`;
+            }
+          }
+        });
+      });
     </script>
   </head>
   <body>
-    <div class="container">
-      <h1>Основы JavaScript</h1>
+    <div class="page-layout">
+      <aside class="sidebar">
+        <div class="table-of-contents">
+          <h2>Содержание</h2>
+          <div id="toc"></div>
+        </div>
+      </aside>
+      <main class="main-content">
+        <div class="container">
+          <h1>Основы JavaScript</h1>
 
-      <section class="section">
-        <h2>Прогресс обучения</h2>
-        <div class="card progress-card">
-          <div class="progress-container">
-            <h3>Введение</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="intro_js" />
-                Введение в JavaScript
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="specifications" />
-                Справочники и спецификации
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="code_editors" />
-                Редакторы кода
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="dev_console" />
-                Консоль разработчика
-              </label>
-            </div>
+          <div class="card table-of-contents">
+            <h2>Содержание</h2>
+            <div id="toc"></div>
+          </div>
 
-            <h3>Основы JavaScript</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="variables" />
-                Переменные
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="data_types" />
-                Типы данных
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="interaction" />
-                Взаимодействие: alert, prompt, confirm
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="type_conversions" />
-                Преобразование типов
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="operators" />
-                Базовые операторы, математика
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="comparison" />
-                Операторы сравнения
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="ifelse" />
-                Условное ветвление: if, '?'
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="logical_operators" />
-                Логические операторы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="nullish" />
-                Операторы нулевого слияния и присваивания: '??', '??='
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="loops" />
-                Циклы while и for
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="switch" />
-                Кострукция "switch"
-              </label>
-            </div>
+          <div class="progress-card card">
+            <div class="progress-container">
+              <h3>Введение</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="intro_js" />
+                  Введение в JavaScript
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="specifications" />
+                  Справочники и спецификации
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="code_editors" />
+                  Редакторы кода
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="dev_console" />
+                  Консоль разработчика
+                </label>
+              </div>
 
-            <h3>Функции</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="functions" />
-                Функции
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="function_expressions" />
-                Function Expression
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="arrow_functions" />
-                Стрелочные функции, основы
-              </label>
-            </div>
+              <h3>Основы JavaScript</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="variables" />
+                  Переменные
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="data_types" />
+                  Типы данных
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="interaction" />
+                  Взаимодействие: alert, prompt, confirm
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="type_conversions" />
+                  Преобразование типов
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="operators" />
+                  Базовые операторы, математика
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="comparison" />
+                  Операторы сравнения
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="ifelse" />
+                  Условное ветвление: if, '?'
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="logical_operators" />
+                  Логические операторы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="nullish" />
+                  Операторы нулевого слияния и присваивания: '??', '??='
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="loops" />
+                  Циклы while и for
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="switch" />
+                  Кострукция "switch"
+                </label>
+              </div>
 
-            <h3>Качество кода</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="debugging" />
-                Отладка в браузере
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="coding_style" />
-                Советы по стилю кода
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="comments" />
-                Комментарии
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="ninja_code" />
-                Ниндзя-код
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="testing" />
-                Автоматическое тестирование c использованием фреймворка Mocha
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="polyfills" />
-                Полифилы
-              </label>
-            </div>
+              <h3>Функции</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="functions" />
+                  Функции
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="function_expressions" />
+                  Function Expression
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="arrow_functions" />
+                  Стрелочные функции, основы
+                </label>
+              </div>
 
-            <h3>Объекты</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="object_basics" />
-                Объекты: основы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="object_copy" />
-                Копирование объектов и ссылки
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="garbage_collection" />
-                Сборка мусора
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="object_methods" />
-                Методы объекта, "this"
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="constructor_new" />
-                Конструктор, оператор "new"
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="optional_chaining" />
-                Опциональная цепочка '?.'
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="symbol" />
-                Тип данных Symbol
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="object_to_primitive" />
-                Преобразование объектов в примитивы
-              </label>
-            </div>
+              <h3>Качество кода</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="debugging" />
+                  Отладка в браузере
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="coding_style" />
+                  Советы по стилю кода
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="comments" />
+                  Комментарии
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="ninja_code" />
+                  Ниндзя-код
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="testing" />
+                  Автоматическое тестирование c использованием фреймворка Mocha
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="polyfills" />
+                  Полифилы
+                </label>
+              </div>
 
-            <h3>Типы данных</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="primitives_methods" />
-                Методы примитивов
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="numbers" />
-                Числа
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="strings" />
-                Строки
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="arrays" />
-                Массивы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="array_methods" />
-                Методы массивов
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="iterables" />
-                Перебираемые объекты
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="map_set" />
-                Map и Set
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="weakmap_weakset" />
-                WeakMap и WeakSet
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="keys_values_entries" />
-                Object.keys, values, entries
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="destructuring" />
-                Деструктурирующее присваивание
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="date_time" />
-                Дата и время
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="json" />
-                Формат JSON, метод toJSON
-              </label>
-            </div>
+              <h3>Об��екты</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="object_basics" />
+                  Объекты: основы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="object_copy" />
+                  Копирование объектов и ссылки
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="garbage_collection" />
+                  Сборка мусора
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="object_methods" />
+                  Методы объекта, "this"
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="constructor_new" />
+                  Конструктор, оператор "new"
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="optional_chaining" />
+                  Опциональная цепочка '?.'
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="symbol" />
+                  Тип данных Symbol
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="object_to_primitive" />
+                  Преобразование объектов в примитивы
+                </label>
+              </div>
 
-            <h3>Продвинутая работа с функциями</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="recursion" />
-                Рекурсия и стек
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="rest_spread" />
-                Остаточные параметры и оператор расширения
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="closure" />
-                Область видимости переменных, замыкание
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="var" />
-                Устаревшее ключевое слово "var"
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="global_object" />
-                Глобальный объект
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="function_object" />
-                Объект функции, NFE
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="new_function" />
-                Синтаксис "new Function"
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="settimeout_setinterval" />
-                Планирование: setTimeout и setInterval
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="call_apply_decorators" />
-                Декораторы и переадресация вызова, call/apply
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="bind" />
-                Привязка контекста к функции
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="arrow_functions_revisited" />
-                Повторяем стрелочные функции
-              </label>
-            </div>
+              <h3>Типы данных</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="primitives_methods" />
+                  Методы примитивов
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="numbers" />
+                  Числа
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="strings" />
+                  Строки
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="arrays" />
+                  Массивы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="array_methods" />
+                  Методы массивов
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="iterables" />
+                  Перебираемые объекты
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="map_set" />
+                  Map и Set
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="weakmap_weakset" />
+                  WeakMap и WeakSet
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="keys_values_entries" />
+                  Object.keys, values, entries
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="destructuring" />
+                  Деструктурирующее присваивание
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="date_time" />
+                  Дата и время
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="json" />
+                  Формат JSON, метод toJSON
+                </label>
+              </div>
 
-            <h3>Свойства объекта</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="property_descriptors" />
-                Флаги и дескрипторы свойств
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="property_accessors" />
-                Свойства - геттеры и сеттеры
-              </label>
-            </div>
+              <h3>Продвинутая работа с функциями</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="recursion" />
+                  Рекурсия и стек
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="rest_spread" />
+                  Остаточные параметры и оператор расширения
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="closure" />
+                  Область видимости переменных, замыкание
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="var" />
+                  Устаревшее ключевое слово "var"
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="global_object" />
+                  Глобальный объект
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="function_object" />
+                  Объект функции, NFE
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="new_function" />
+                  Синтаксис "new Function"
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="settimeout_setinterval" />
+                  Планирование: setTimeout и setInterval
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="call_apply_decorators" />
+                  Декораторы и переадресация вызова, call/apply
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="bind" />
+                  Привязка контекста к функции
+                </label>
+                <label class="topic-item">
+                  <input
+                    type="checkbox"
+                    data-topic="arrow_functions_revisited"
+                  />
+                  Повторяем стрелочные функции
+                </label>
+              </div>
 
-            <h3>Прототипы и наследование</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="prototype_inheritance" />
-                Прототипное наследование
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="function_prototype" />
-                F.prototype
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="native_prototypes" />
-                Встроенные прототипы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="prototype_methods" />
-                Методы прототипов, объекты без свойства __proto__
-              </label>
-            </div>
+              <h3>Свойства объекта</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="property_descriptors" />
+                  Флаги и дескрипторы свойств
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="property_accessors" />
+                  Свойства - геттеры и сеттеры
+                </label>
+              </div>
 
-            <h3>Классы</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="class_basic" />
-                Класс: базовый синтаксис
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="class_inheritance" />
-                Наследование классов
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="static_properties_methods" />
-                Статические свойства и методы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="private_protected" />
-                Приватные и защищённые методы и свойства
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="extend_natives" />
-                Расширение встроенных классов
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="instanceof" />
-                Проверка класса: "instanceof"
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="mixins" />
-                Примеси
-              </label>
-            </div>
+              <h3>Прототипы и наследование</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="prototype_inheritance" />
+                  Прототипное наследование
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="function_prototype" />
+                  F.prototype
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="native_prototypes" />
+                  Встроенные прототипы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="prototype_methods" />
+                  Методы про��отипов, объекты без ссылки __proto__
+                </label>
+              </div>
 
-            <h3>Обработка ошибок</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="try_catch" />
-                Обработка ошибок, "try..catch"
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="custom_errors" />
-                Пользовательские ошибки, расширение Error
-              </label>
-            </div>
+              <h3>Классы</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="class_basic" />
+                  Класс: базовый синтаксис
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="class_inheritance" />
+                  Наследование классов
+                </label>
+                <label class="topic-item">
+                  <input
+                    type="checkbox"
+                    data-topic="static_properties_methods"
+                  />
+                  Статические свойства и методы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="private_protected" />
+                  Приватные и защищённые методы и свойства
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="extend_natives" />
+                  Расширени встроенных классов
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="instanceof" />
+                  Проверка класса: "instanceof"
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="mixins" />
+                  Примеси
+                </label>
+              </div>
 
-            <h3>Промисы, async/await</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="callbacks" />
-                Введение: колбэки
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="promise_basics" />
-                Промисы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="promise_chaining" />
-                Цепочка промисов
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="promise_error_handling" />
-                Промисы: обработка ошибок
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="promise_api" />
-                Promise API
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="promisification" />
-                Промисификация
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="microtasks" />
-                Микрозадачи
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="async_await" />
-                Async/await
-              </label>
-            </div>
+              <h3>Обработка ошибок</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="try_catch" />
+                  Обработка ошибок, "try..catch"
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="custom_errors" />
+                  Пользовательские ошибки, расширение Error
+                </label>
+              </div>
 
-            <h3>Генераторы и продвинутая итерация</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="generators" />
-                Генераторы
-              </label>
-              <label class="topic-item">
-                <input
-                  type="checkbox"
-                  data-topic="async_iterators_generators"
-                />
-                Асинхронные итераторы и генераторы
-              </label>
-            </div>
+              <h3>Промисы, async/await</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="callbacks" />
+                  Введение: колбэки
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="promise_basics" />
+                  Промисы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="promise_chaining" />
+                  Цепочка промисов
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="promise_error_handling" />
+                  Промисы: обработка ошибок
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="promise_api" />
+                  Promise API
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="promisification" />
+                  Промисификация
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="microtasks" />
+                  Микрозадачи
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="async_await" />
+                  Async/await
+                </label>
+              </div>
 
-            <h3>Модули</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="modules_intro" />
-                Модули, введение
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="export_import" />
-                Экспорт и импорт
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="dynamic_imports" />
-                Динамические импорты
-              </label>
-            </div>
+              <h3>Генераторы и продвинутая итерация</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="generators" />
+                  Генераторы
+                </label>
+                <label class="topic-item">
+                  <input
+                    type="checkbox"
+                    data-topic="async_iterators_generators"
+                  />
+                  Асинхронные итераторы и генераторы
+                </label>
+              </div>
 
-            <h3>Разное</h3>
-            <div class="topic-list">
-              <label class="topic-item">
-                <input type="checkbox" data-topic="proxy" />
-                Proxy и Reflect
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="eval" />
-                Eval: выполнение строки кода
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="currying" />
-                Каррирование
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="reference_type" />
-                Ссылочный тип
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="bitwise_operators" />
-                Побитовые операторы
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="bigint" />
-                BigInt
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="unicode" />
-                Юникод, внутреннее устройство строк
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="intl" />
-                Intl: интернационализация в JavaScript
-              </label>
-              <label class="topic-item">
-                <input type="checkbox" data-topic="weakref" />
-                WeakRef и FinalizationRegistry
-              </label>
-            </div>
+              <h3>Модули</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="modules_intro" />
+                  Модули, введение
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="export_import" />
+                  Экспорт и импорт
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="dynamic_imports" />
+                  Динамические импорты
+                </label>
+              </div>
 
-            <div class="progress-info">
-              <span class="progress-percentage">0%</span> тем изучено
-            </div>
-            <div class="export-container">
-              <button id="exportProgress" class="diary-button">
-                Экспортировать прогресс
-              </button>
+              <h3>Разное</h3>
+              <div class="topic-list">
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="proxy" />
+                  Proxy и Reflect
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="eval" />
+                  Eval: выполнение строки кода
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="currying" />
+                  Каррирование
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="reference_type" />
+                  Ссылочный тип
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="bitwise_operators" />
+                  Побитовые операторы
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="bigint" />
+                  BigInt
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="unicode" />
+                  Юникод, внутреннее устройство строк
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="intl" />
+                  Intl: интернационализация в JavaScript
+                </label>
+                <label class="topic-item">
+                  <input type="checkbox" data-topic="weakref" />
+                  WeakRef и FinalizationRegistry
+                </label>
+              </div>
+
+              <div class="progress-info">
+                <span class="progress-percentage">0%</span> тем изучено
+              </div>
+              <div class="export-container">
+                <button id="exportProgress" class="diary-button">
+                  Экспортировать прогресс
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section class="section">
-        <h2>Объявление переменных</h2>
-        <div class="card">
-          <p>
-            Мы можем объявить переменные для хранения данных с помощью ключевых
-            слов:
-          </p>
-          <ul>
-            <li><code>let</code> – современный способ объявления</li>
-            <li><code>var</code> – устаревший способ объявления</li>
-            <li>
-              <code>const</code> – похож на let, но значение переменной не может
-              изменяться
-            </li>
-          </ul>
-        </div>
-      </section>
+          <section class="section">
+            <h2>Объявление переменных</h2>
+            <div class="card">
+              <p>
+                Мы можем объявить переменные для хранения данных с помощью
+                ключевых слов:
+              </p>
+              <ul>
+                <li><code>let</code> – современный способ объявления</li>
+                <li><code>var</code> – устаревший способ объявл��ния</li>
+                <li>
+                  <code>const</code> – похож на let, но значение переменной не
+                  может изменяться
+                </li>
+              </ul>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Типы данных</h2>
-        <div class="card">
-          <h3>Примитивные типы:</h3>
-          <ul>
-            <li><strong>number</strong> - для любых чисел</li>
-            <li>
-              <strong>bigint</strong> - для целых чисел произвольной длины
-            </li>
-            <li><strong>string</strong> - для строк</li>
-            <li><strong>boolean</strong> - для true/false</li>
-            <li><strong>null</strong> - для неизвестных значений</li>
-            <li><strong>undefined</strong> - для непрсвоенных значений</li>
-            <li><strong>symbol</strong> - для уникальных идентификаторов</li>
-          </ul>
-          <h3>Объектный тип:</h3>
-          <ul>
-            <li><strong>object</strong> - для более сложных структур данных</li>
-          </ul>
-        </div>
-      </section>
+          <section class="section">
+            <h2>Типы данных</h2>
+            <div class="card">
+              <h3>Примитивные типы:</h3>
+              <ul>
+                <li><strong>number</strong> - для любых чисел</li>
+                <li>
+                  <strong>bigint</strong> - для целых чисел произвольной длины
+                </li>
+                <li><strong>string</strong> - для строк</li>
+                <li><strong>boolean</strong> - для true/false</li>
+                <li><strong>null</strong> - для неизвестных значений</li>
+                <li><strong>undefined</strong> - для непрсвоенных значений</li>
+                <li>
+                  <strong>symbol</strong> - для уникальных идентификаторов
+                </li>
+              </ul>
+              <h3>Объектный тип:</h3>
+              <ul>
+                <li>
+                  <strong>object</strong> - для более сложных структур данных
+                </li>
+              </ul>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Оператор typeof</h2>
-        <div class="card">
-          <p>
-            Оператор typeof возвращает строку, указывающую тип операнда. Это
-            один из самых надёжных способов проверки типа данных в JavaScript.
-          </p>
-          <ul>
-            <li>
-              Имеет две формы: <code>typeof x</code> или <code>typeof(x)</code>
-            </li>
-          </ul>
+          <section class="section">
+            <h2>Оператор typeof</h2>
+            <div class="card">
+              <p>
+                Оператор typeof возвращает строку, указывающую тип операнда. Это
+                один из самых надёжных способов проверки типа данных в
+                JavaScript.
+              </p>
+              <ul>
+                <li>
+                  Имеет две формы: <code>typeof x</code> или
+                  <code>typeof(x)</code>
+                </li>
+              </ul>
 
-          <h4>Возможные значения typeof:</h4>
-          <pre><code class="language-javascript">// Примитивные типы
+              <h4>Возможные значения typeof:</h4>
+              <pre><code class="language-javascript">// Примитивные типы
 typeof undefined     // "undefined"
 typeof true         // "boolean"
 typeof 42           // "number"
@@ -704,33 +876,34 @@ typeof new Date()   // "object"
 typeof /regex/      // "object"
 typeof function(){} // "function"
 
-// Необъявленные и объявлен��ые переменные
+// Необъявленные и объявленные переменные
 typeof undeclaredVar  // "undefined" (не вызывает ошибку!)
 let declaredVar;
 typeof declaredVar    // "undefined"</code></pre>
 
-          <h4>Особенности и краевые случаи:</h4>
-          <ul>
-            <li>
-              <strong>null:</strong> возвращает "object" - это известная ошибка
-              в языке, которую нельзя исправить из-за обратной совместимости
-            </li>
-            <li>
-              <strong>массивы:</strong> возвращает "object" - для определения
-              массива лучше использовать Array.isArray()
-            </li>
-            <li>
-              <strong>функции:</strong> единственный случай, когда typeof
-              возвращает "function" для объектного типа
-            </li>
-            <li>
-              <strong>необъявленные переменные:</strong> безопасно возвращает
-              "undefined" без выброса ошибки
-            </li>
-          </ul>
+              <h4>Особенности и краевые случаи:</h4>
+              <ul>
+                <li>
+                  <strong>null:</strong> возвращает "object" - это известная
+                  ош��бка в языке, которую нельзя исправить из-за обратной
+                  совместимости
+                </li>
+                <li>
+                  <strong>массивы:</strong> возвращает "object" - для
+                  определения массива лучше использовать Array.isArray()
+                </li>
+                <li>
+                  <strong>функции:</strong> единственный случай, когда typeof
+                  возвращает "function" для объектного типа
+                </li>
+                <li>
+                  <strong>необъявленные переменные:</strong> безопасно
+                  возвращает "undefined" без выброса ошибки
+                </li>
+              </ul>
 
-          <h4>Практическое применение:</h4>
-          <pre><code class="language-javascript">// Проверка на undefined
+              <h4>Практическое применение:</h4>
+              <pre><code class="language-javascript">// Проверка на undefined
 if (typeof variable === "undefined") {
     console.log("Переменная не определена");
 }
@@ -757,45 +930,45 @@ function processValue(value) {
 // Ограничения:
 // Не различает разные типы объектов (массивы, даты и т.д.)
 // Возвращает неправильный результат для null
-// Не может определить тип NaN (возвращает "number")</code></pre>
-        </div>
-      </section>
+// Не можт определить тип NaN (возращает "number")</code></pre>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Стрелочные функции</h2>
-        <div class="card">
-          <p>Особенности стрелочных функций:</p>
-          <ul>
-            <li>Не имеют this</li>
-            <li>Не имеют arguments</li>
-            <li>Не могут быть вызваны с new</li>
-          </ul>
-        </div>
-      </section>
+          <section class="section">
+            <h2>Стрелочные функции</h2>
+            <div class="card">
+              <p>Особенности стрелочных функций:</p>
+              <ul>
+                <li>Не имеют this</li>
+                <li>Не имеют arguments</li>
+                <li>Не могут быть вызваны с new</li>
+              </ul>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Оператор await</h2>
-        <div class="card">
-          <p>
-            await — это оператор, который используется внутри асинхронной
-            функции для ожидания выполнения промиса. Он приостанавливает
-            выполнение функции до тех пор, пока промис не будет выполнен
-            (разрешен или отклонен).
-          </p>
-        </div>
-      </section>
+          <section class="section">
+            <h2>Оператор await</h2>
+            <div class="card">
+              <p>
+                await — это оператор, который испо��ьзуется внутри асинхронной
+                функции для ожидания выполнения промиса. Он приостанавливает
+                выполнение функции до тех пор, пока промис не будет выполнен
+                (разрешен или отклонен).
+              </p>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>ООП в JavaScript</h2>
-        <div class="card">
-          <h3>Основные принципы:</h3>
-          <div class="principle">
-            <h4>Инкапсуляция</h4>
-            <p>
-              Объединение данных и методов для работы с ними в единую объект и
-              скрытие деталей реализации.
-            </p>
-            <pre><code class="language-javascript">class BankAccount {
+          <section class="section">
+            <h2>ООП в JavaScript</h2>
+            <div class="card">
+              <h3>Основные принципы:</h3>
+              <div class="principle">
+                <h4>Инкапсуляция</h4>
+                <p>
+                  Оъединение данных и методов для работы с ними в единую объект
+                  и скрытие деталей реализации.
+                </p>
+                <pre><code class="language-javascript">class BankAccount {
     #balance = 0;
     constructor(initialBalance) {
         this.#balance = initialBalance;
@@ -812,12 +985,12 @@ function processValue(value) {
         return this.#balance;
     }
 }</code></pre>
-          </div>
+              </div>
 
-          <div class="principle">
-            <h4>Наследование</h4>
-            <p>Возможность создать новый класс на основе существующего.</p>
-            <pre><code class="language-javascript">class Animal {
+              <div class="principle">
+                <h4>Наследование</h4>
+                <p>Возможность создать новый класс на основе существующего.</p>
+                <pre><code class="language-javascript">class Animal {
     constructor(name) {
         this.name = name;
     }
@@ -832,15 +1005,15 @@ class Dog extends Animal {
         console.log(`${this.name} гавкает`);
     }
 }</code></pre>
-          </div>
+              </div>
 
-          <div class="principle">
-            <h4>Полиморфизм</h4>
-            <p>
-              Возможность использовать объекты с одинаковым интерфейсом без
-              информации о типе и внутренней структуре объекта.
-            </p>
-            <pre><code class="language-javascript">class Shape {
+              <div class="principle">
+                <h4>Полиморфизм</h4>
+                <p>
+                  Возможность использовать объекты с одинаковым интерфейсом без
+                  информации о типе и внутренней структуре объекта.
+                </p>
+                <pre><code class="language-javascript">class Shape {
     area() {
         return 0;
     }
@@ -868,18 +1041,18 @@ class Rectangle extends Shape {
         return this.width * this.height;
     }
 }</code></pre>
-          </div>
+              </div>
 
-          <div class="principle">
-            <h4>Абстракция</h4>
-            <p>
-              Выделение главных характеристик объекта, исключая незначительные.
-              Создание простых, понятных интерфейсов для работы со сложными
-              системами.
-            </p>
-            <pre><code class="language-javascript">class Database {
+              <div class="principle">
+                <h4>Абстракция</h4>
+                <p>
+                  Выделение главных характеристик объекта, исключая
+                  незначительные. Создание простых, понятных интерфейсов для
+                  работы со сложными системами.
+                </p>
+                <pre><code class="language-javascript">class Database {
     connect() {
-        throw new Error('Метод connect должен быть реализован');
+        throw new Error('метод connect должен быть реализован');
     }
     
     query() {
@@ -911,44 +1084,46 @@ function executeQuery(database, sql) {
     database.disconnect();
 }
 </code></pre>
-          </div>
-        </div>
-      </section>
+              </div>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Всплытие и зоны видимости переменных</h2>
-        <div class="card">
-          <h3>Всплытие (hoisting)</h3>
-          <p>
-            Всплытие (hoisting) - это механизм JavaScript, при котором
-            объявления переменных и функций физически перемещаются в начало их
-            области видимости интерпретатором во время фазы компиляции, до
-            выполнения кода.
-          </p>
+          <section class="section">
+            <h2>Всплытие и зоны видимости переменных</h2>
+            <div class="card">
+              <h3>Всплытие (hoisting)</h3>
+              <p>
+                Всплытие (hoisting) - это механизм JavaScript, при котором
+                объявления переменных и функций физически перемещаются в начало
+                их области видимости интерпретатором во время фазы компиляции,
+                до выполнения кода.
+              </p>
 
-          <h4>Порядок выполнения кода в JavaScript</h4>
-          <p>JavaScript выполняется в два этапа:</p>
-          <ol>
-            <li>
-              <strong>Фаза создания</strong> - создаётся контекст выполнения,
-              выделяется память для переменных и функций
-            </li>
-            <li>
-              <strong>Фаза выполнения</strong> - код выполняется строчно,
-              переменные присваиваются значения
-            </li>
-          </ol>
+              <h4>Порядок выполнения кода в JavaScript</h4>
+              <p>JavaScript выполняется в два этапа:</p>
+              <ol>
+                <li>
+                  <strong>Фаза создания</strong> - создаётся контекст
+                  выполнения, выделяется память для переменных и функций
+                </li>
+                <li>
+                  <strong>Фаза выполнения</strong> - код выполняется строчно,
+                  переменные присваиваются значения
+                </li>
+              </ol>
 
-          <h4>Всплытие переменных</h4>
-          <p>Существуют важные различия во всплытии разных типов переменных:</p>
+              <h4>Всплытие переменных</h4>
+              <p>
+                Существуют важные различия во всплытии разных типов переменных:
+              </p>
 
-          <h5>var:</h5>
-          <ul>
-            <li>Всплывает со значением undefined</li>
-            <li>Доступна во всей области видимости функции</li>
-            <li>Можно использовать до объявления (получим undefined)</li>
-          </ul>
-          <pre><code class="language-javascript">console.log(x);  // undefined
+              <h5>var:</h5>
+              <ul>
+                <li>Всплывает со значением undefined</li>
+                <li>Доступна во всей области видимости функции</li>
+                <li>Можно использовать до объявления (получим undefined)</li>
+              </ul>
+              <pre><code class="language-javascript">console.log(x);  // undefined
 var x = 5;
 
 function example() {
@@ -958,13 +1133,15 @@ function example() {
 
 console.log(x);  // 5</code></pre>
 
-          <h5>let и const:</h5>
-          <ul>
-            <li>Тоже всплывают, но остаются в "временной мёртвой зоне"</li>
-            <li>Нельзя использовать до объявления (получим ReferenceError)</li>
-            <li>Имеют блочную область видимости</li>
-          </ul>
-          <pre><code class="language-javascript">console.log(x);  // ReferenceError
+              <h5>let и const:</h5>
+              <ul>
+                <li>Тоже всплывают, но остаются в "временной мёртвой зоне"</li>
+                <li>
+                  Нельзя использовать до объявления (получим ReferenceError)
+                </li>
+                <li>Имеют блочную область видимости</li>
+              </ul>
+              <pre><code class="language-javascript">console.log(x);  // ReferenceError
 let x = 5;
 
 {
@@ -974,19 +1151,19 @@ let x = 5;
 
 console.log(x);  // 5</code></pre>
 
-          <h4>Всплытие функций</h4>
-          <p>
-            Существует три способа объявления функций, каждый со своими
-            особенностями всплытия:
-          </p>
+              <h4>Всплытие функций</h4>
+              <p>
+                Существует три способа объявления функций, каждый со своими
+                особенностями всплытия:
+              </p>
 
-          <h5>1. Объявление функции (Function Declaration):</h5>
-          <ul>
-            <li>Всплывает полностью вместе с телом функции</li>
-            <li>Можно вызывать до объявления</li>
-            <li>Имеет приоритет над всплытием переменных</li>
-          </ul>
-          <pre><code class="language-javascript">sayHi();  // "Привет!"
+              <h5>1. Объявление функции (Function Declaration):</h5>
+              <ul>
+                <li>Всплывает полностью вместе с телом функции</li>
+                <li>Можно вызывать до объявления</li>
+                <li>Имеет приоритет над всплытием переменных</li>
+              </ul>
+              <pre><code class="language-javascript">sayHi();  // "Привет!"
 
 function sayHi() {
     console.log("Привет!");
@@ -994,13 +1171,13 @@ function sayHi() {
 
 console.log(sayHi);  // [Function: sayHi]</code></pre>
 
-          <h5>2. Фунциональное выражение (Function Expression):</h5>
-          <ul>
-            <li>Всплывает как переменная</li>
-            <li>Нельзя вызывать до объявления</li>
-            <li>С var инициализируется как undefined</li>
-          </ul>
-          <pre><code class="language-javascript">sayHi();  // TypeError: sayHi is not a function
+              <h5>2. Фунциональное выражение (Function Expression):</h5>
+              <ul>
+                <li>Всплывает как переменная</li>
+                <li>Нельзя вызывать до объявления</li>
+                <li>С var инициализируется как undefined</li>
+              </ul>
+              <pre><code class="language-javascript">sayHi();  // TypeError: sayHi is not a function
 
 var sayHi = function() {
     console.log("Привет!");
@@ -1008,12 +1185,14 @@ var sayHi = function() {
 
 console.log(sayHi);  // [Function: sayHi]</code></pre>
 
-          <h5>3. Стрелочные функции:</h5>
-          <ul>
-            <li>Ведут себя как функциональные выражения</li>
-            <li>Всплывают в зависимости от типа переменной (var/let/const)</li>
-          </ul>
-          <pre><code class="language-javascript">sayHi();  // ReferenceError
+              <h5>3. Стрелочные функции:</h5>
+              <ul>
+                <li>Веду себя как функциональные выражения</li>
+                <li>
+                  Всплывают в зависимости от типа переменной (var/let/const)
+                </li>
+              </ul>
+              <pre><code class="language-javascript">sayHi();  // ReferenceError
 
 const sayHi = () => {
     console.log("Привет!");
@@ -1021,8 +1200,8 @@ const sayHi = () => {
 
 console.log(sayHi);  // [Function: sayHi]</code></pre>
 
-          <h4>Сложные случаи всплытия</h4>
-          <pre><code class="language-javascript">console.log(foo);  // [Function: foo]
+              <h4>Сложные случаи всплытия</h4>
+              <pre><code class="language-javascript">console.log(foo);  // [Function: foo]
 
 var foo = "bar";
 
@@ -1037,12 +1216,12 @@ console.log(foo);  // "bar"
 // 2. Объявление var foo игнорируется (имя уже существует)
 // 3. При выполнении foo присваивается значение "bar"</code></pre>
 
-          <h4>Всплытие в классах</h4>
-          <p>
-            Классы, в отличие от функций, не всплывают. Их необходимо объявлять
-            перед использованием.
-          </p>
-          <pre><code class="language-javascript">const p = new Rectangle();  // ReferenceError
+              <h4>Всплытие в классах</h4>
+              <p>
+                Классы, в отличие от функций, не всплывают. Их необходимо
+                объявлять перед использованием.
+              </p>
+              <pre><code class="language-javascript">const p = new Rectangle();  // ReferenceError
 
 class Rectangle {
     constructor() {
@@ -1053,49 +1232,50 @@ class Rectangle {
 
 console.log(p);  // Rectangle { height: 0, width: 0 }</code></pre>
 
-          <h4>Практические рекомендации</h4>
-          <ul>
-            <li>
-              Объявляйте переменные в начале их облсти видимости для лучшей
-              читаемости
-            </li>
-            <li>
-              Используйте let и const вместо var для предотвращения неожиданного
-              поведения
-            </li>
-            <li>
-              Объявляйте функции перед их использованием, несмотря ��а всплытие
-            </li>
-          </ul>
+              <h4>Практические рекомендации</h4>
+              <ul>
+                <li>
+                  Объявляйте переменные в начале их облсти видимости для лучшей
+                  читаемости
+                </li>
+                <li>
+                  Используйте let и const вместо var для предотвращения
+                  неожиданного поведения
+                </li>
+                <li>
+                  Объявляйте функции перед их использованием, несмотря на
+                  всплытие
+                </li>
+              </ul>
 
-          <h3>Временная мёртвая зона (Temporal Dead Zone)</h3>
-          <p>
-            TDZ - это период времени между входом в облась видимости и
-            фактическим объявлением переменной let/const, где к переменной
-            нельзя обратиться.
-          </p>
-          <pre><code class="language-javascript">console.log(x); // ReferenceError
+              <h3>Временная мёртвая зона (Temporal Dead Zone)</h3>
+              <p>
+                TDZ - это период времени между входом в облась видимости и
+                фактическим объявленем переменной let/const, где к переменной
+                нельзя обратиться.
+              </p>
+              <pre><code class="language-javascript">console.log(x); // ReferenceError
 let x = 5;
 
 // В отличие от var, let и const не всплывают
 // Период между началом блока и объявлением - это TDZ</code></pre>
 
-          <h3>Области видимости</h3>
-          <ul>
-            <li>
-              <strong>Глобальная область видимости</strong> - переменные
-              доступны веде
-            </li>
-            <li>
-              <strong>Функциональная область видимости</strong> - переменные
-              доступны только внутри функции
-            </li>
-            <li>
-              <strong>Блочная область видимости</strong> - переменные let и
-              const до��тупны только внутри блока
-            </li>
-          </ul>
-          <pre><code class="language-javascript">let global = 'Я глобальная';
+              <h3>Области видимости</h3>
+              <ul>
+                <li>
+                  <strong>Глобальная область видимости</strong> - переменные
+                  доступны веде
+                </li>
+                <li>
+                  <strong>Функциональная область видимости</strong> - переменные
+                  доступны только внутри функции
+                </li>
+                <li>
+                  <strong>Блочная область видимости</strong> - переменные let и
+                  const доступны только внутри блока
+                </li>
+              </ul>
+              <pre><code class="language-javascript">let global = 'Я глобальная';
 
 function example() {
     let functional = 'Я функционаьная';
@@ -1115,23 +1295,24 @@ function example() {
 console.log(global);     // Доступна
 console.log(functional); // ReferenceError
 console.log(block);      // ReferenceError</code></pre>
-        </div>
-      </section>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Функции в JavaScript</h2>
-        <div class="card">
-          <h3>Функции как объекты первого класса</h3>
-          <p>
-            В JavaScript функции являются объектами первого класса, то означает:
-          </p>
-          <ul>
-            <li>Их можно присваивать переменным</li>
-            <li>Передавать как аргументы другим функциям</li>
-            <li>Возвращать из других функций</li>
-            <li>Хранить в структурах данных</li>
-          </ul>
-          <pre><code class="language-javascript">// Функция как значение
+          <section class="section">
+            <h2>Функции в JavaScript</h2>
+            <div class="card">
+              <h3>Функции как объекты первого класса</h3>
+              <p>
+                В JavaScript функции являются объектами первого класса, то
+                означает:
+              </p>
+              <ul>
+                <li>Их можно присваивать переменным</li>
+                <li>Передавать как аргументы другим функциям</li>
+                <li>Возвращать из других функций</li>
+                <li>Хранить в структурах данных</li>
+              </ul>
+              <pre><code class="language-javascript">// Функция как значение
 const greeting = function(name) {
     return `Привет, ${name}!`;
 };
@@ -1147,15 +1328,15 @@ function multiply(x) {
         return x * y;
     };
 }</code></pre>
-        </div>
+            </div>
 
-        <div class="card">
-          <h3>Контекст выполнения (this)</h3>
-          <p>
-            Значение this определяется тем, как функция вызывается, а не где она
-            оределена.
-          </p>
-          <pre><code class="language-javascript">const user = {
+            <div class="card">
+              <h3>Контекст выполнения (this)</h3>
+              <p>
+                Значение this определяется тем, как функция вызывается, а не где
+                оределена.
+              </p>
+              <pre><code class="language-javascript">const user = {
     name: 'Иван',
     greet() {
         console.log(`Привет, я ${this.name}`);
@@ -1167,8 +1348,8 @@ user.greet(); // "Привет, я Иван"
 const greetFn = user.greet;
 greetFn(); // "Привет, я undefined" - потеря контекста</code></pre>
 
-          <h4>Методы привязки контекста</h4>
-          <pre><code class="language-javascript">// bind - создаёт новую функцию с привязанным контекстом
+              <h4>Методы привязки контекста</h4>
+              <pre><code class="language-javascript">// bind - создаёт новую функцию с привязанным контекстом
 const boundGreet = user.greet.bind(user);
 
 // call - вызывает функцию с указанным контекстом и аргументами
@@ -1176,15 +1357,15 @@ user.greet.call({ name: 'Петр' }); // "Привет, я Петр"
 
 // apply - то же, что и call, но принимает массив аргументов
 user.greet.apply({ name: 'Анна' });</code></pre>
-        </div>
+            </div>
 
-        <div class="card">
-          <h3>Функции-конструкторы</h3>
-          <p>
-            При вызове функции с new создаётся новый объект, и this указывает на
-            него.
-          </p>
-          <pre><code class="language-javascript">function User(name) {
+            <div class="card">
+              <h3>Функции-конструкторы</h3>
+              <p>
+                При вызове функции с new создаётся новый объект, и this
+                указывает на него.
+              </p>
+              <pre><code class="language-javascript">function User(name) {
     this.name = name;
     this.sayHi = function() {
         console.log(`Привет, я ${this.name}`);
@@ -1198,18 +1379,18 @@ user.sayHi(); // "Привет, я Иван"
 User.prototype.greet = function() {
     console.log(`Здравствуйте, ${this.name}`);
 };</code></pre>
-        </div>
+            </div>
 
-        <div class="card">
-          <h3>Стрелочные функции</h3>
-          <p>Основные отличия о обычных функций:</p>
-          <ul>
-            <li>Не имеют своего this (берут из внешнего окружения)</li>
-            <li>Не могут быть использованы как конструкторы</li>
-            <li>Не имеют arguments</li>
-            <li>Не могут быть методами объекта</li>
-          </ul>
-          <pre><code class="language-javascript">const obj = {
+            <div class="card">
+              <h3>Стрелочные функции</h3>
+              <p>Основные отличия о обычных функций:</p>
+              <ul>
+                <li>Не имеют своего this (берут из внешнего окружения)</li>
+                <li>Не могут быть использованы как конструкторы</li>
+                <li>Не имеют arguments</li>
+                <li>Не могут быть методами объекта</li>
+              </ul>
+              <pre><code class="language-javascript">const obj = {
     name: 'Объект',
     regularMethod: function() {
         setTimeout(function() {
@@ -1222,22 +1403,23 @@ User.prototype.greet = function() {
         }, 100);
     }
 };</code></pre>
-        </div>
+            </div>
 
-        <div class="card">
-          <h3>Замыкания</h3>
-          <p>
-            Замыкание - это функция, которая запоминает свои внешние переменные
-            и может получить к ним доступ даже после того, как внешняя функция
-            завершила работу.
-          </p>
-          <h4>Как работают замыкания?</h4>
-          <p>
-            Каждая функция при создании сохраняет ссылку на лексическое
-            окружение, в котором она была создан. Когда функция создаётся внутри
-            другой функции, она сохраняет доступ к переменным внешней функции.
-          </p>
-          <pre><code class="language-javascript">function createCounter() {
+            <div class="card">
+              <h3>Замыкания</h3>
+              <p>
+                Замыкание - это функция, которая запоминает свои внешние
+                переменные и может получить к ним доступ даже после тоо, как
+                внешняя функция завершила работу.
+              </p>
+              <h4>Как работают замыкания?</h4>
+              <p>
+                Каждая функция при создании сохраняет ссылку на лексическое
+                окружение, в котором она была создан. Когда функция создаётся
+                внутри другой функции, она сохраняет доступ к переменным внешней
+                функции.
+              </p>
+              <pre><code class="language-javascript">function createCounter() {
     let count = 0;
     
     return {
@@ -1259,20 +1441,20 @@ console.log(counter.increment()); // 2
 console.log(counter.getValue()); // 2
 console.log(counter.decrement()); // 1</code></pre>
 
-          <p>
-            При каждом вызове <code>createCounter()</code> создаётся новое
-            лексическое окружение со своей переменной count. Возвращаемая
-            функция сохраняет ссылку именно на то окружение, в котором она была
-            создана, поэтому разные счётчики работают независимо.
-          </p>
+              <p>
+                При каждом вызове <code>createCounter()</code> создаётся новое
+                лексическое окружение со своей переменной count. Возвращаемая
+                функция сохраняет ссылку именно на то окружение, в котором она
+                была создана, поэтому разные счетчики рабтают независимо.
+              </p>
 
-          <h4>Лексическая область видимости</h4>
-          <p>
-            Лексическая область видимости означает, что доступность переменных
-            определяется тем, где функция была объявлена в коде, а не тем, где
-            она вызывается.
-          </p>
-          <pre><code class="language-javascript">let x = 10;
+              <h4>Лексическая область видимости</h4>
+              <p>
+                Лексическая область видимости означает, что доступность
+                переменных определяется тем, где функция была объявлена в коде,
+                а не тем, где она вызывается.
+              </p>
+              <pre><code class="language-javascript">let x = 10;
 
 function foo() {
     let x = 20;  // Эта переменная x затеняет глобальную
@@ -1291,17 +1473,18 @@ function baz() {
 foo();  // 20
 baz();  // 10</code></pre>
 
-          <h4>Цепочка областей видимости</h4>
-          <p>
-            Когда код пытается получить доступ к переменной, JavaScript ищет её:
-          </p>
-          <ol>
-            <li>В текущей области видимости</li>
-            <li>Если не находит, ищет во внешней области видимости</li>
-            <li>Продолжает поиск вверх до глобальной области</li>
-            <li>Если переменная не найдена, возвращает ReferenceError</li>
-          </ol>
-          <pre><code class="language-javascript">let a = 'глобальная';
+              <h4>Цепочка областей видимости</h4>
+              <p>
+                Когда код пытается получить доступ к переменной, JavaScript ищет
+                её:
+              </p>
+              <ol>
+                <li>В текущей области видимости</li>
+                <li>Если не находит, ищет во внешней области видимости</li>
+                <li>Продолжает поиск вверх до глобальной области</li>
+                <li>Если переменная не найдена, возвращает ReferenceError</li>
+              </ol>
+              <pre><code class="language-javascript">let a = 'глобальная';
 
 function outer() {
     let b = 'из outer';
@@ -1329,43 +1512,43 @@ console.log(a);     // глобальная
 console.log(b);     // ReferenceError: b is not defined
 console.log(c);     // ReferenceError: c is not defined</code></pre>
 
-          <p>
-            Важно понимать, что лексическая область видимости определяется
-            статически во время написания кода, а не динамически во время
-            выполнения. Это означает, что функция всегда будет иметь доступ к
-            переменным той области, в которой она была определена, независимо от
-            того, где она вызывается.
-          </p>
-        </div>
-      </section>
+              <p>
+                Важно понимать, что лексическая область видимости определяется
+                статически во время написания кода, а не динамически во время
+                выполнения. Это означает, что функция всегда будет иметь доступ
+                к переменным той области, в которой она была определена,
+                независимо от того, где она вызывается.
+              </p>
+            </div>
+          </section>
 
-      <section class="section">
-        <h2>Прототипы и наследование в JavaScript</h2>
-        <div class="card">
-          <h3>Прототипы</h3>
-          <p>
-            В JavaScript каждый объект имеет внутреннее свойство [[Prototype]],
-            которое создает связь с другим объектом. Это свойство формирует
-            основу прототипного наследования.
-          </p>
+          <section class="section">
+            <h2>Прототипы и наследование в JavaScript</h2>
+            <div class="card">
+              <h3>Прототипы</h3>
+              <p>
+                В JavaScript каждый объект имеет внутреннее свойство
+                [[Prototype]], которое создает связь с другим объектом. Это
+                свойство формирует основу прототипного наследования.
+              </p>
 
-          <h4>Основные концепции:</h4>
-          <ul>
-            <li>
-              <strong>[[Prototype]]</strong> - внутреннее свойство объекта,
-              доступное через <code>__proto__</code>
-            </li>
-            <li>
-              <strong>Цепочка прототипов</strong> - последовательность связанных
-              объектов через [[Prototype]]
-            </li>
-            <li>
-              <strong>Встроенные прототипы</strong> - Array.prototype,
-              Object.prototype и другие
-            </li>
-          </ul>
+              <h4>Основные концепции:</h4>
+              <ul>
+                <li>
+                  <strong>[[Prototype]]</strong> - внутреннее свойство объекта,
+                  доступное через <code>__proto__</code>
+                </li>
+                <li>
+                  <strong>Цепочка прототипов</strong> - последовательность
+                  связанных объектов через [[Prototype]]
+                </li>
+                <li>
+                  <strong>Встроенные прототипы</strong> - Array.prototype,
+                  Object.prototype и другие
+                </li>
+              </ul>
 
-          <pre><code class="language-javascript">// Пример прототипного наследования
+              <pre><code class="language-javascript">// Пример прототипного наследования
 const animal = {
     eats: true,
     walk() {
@@ -1381,23 +1564,23 @@ const rabbit = {
 rabbit.walk(); // Животное идет (метод взят из прототипа)
 console.log(rabbit.eats); // true (свойство взято из прототипа)</code></pre>
 
-          <h4>Наследование через прототипы:</h4>
-          <ul>
-            <li>Объекты наследуют свойства и методы от своих прототипов</li>
-            <li>Поиск свойств идет по цепочке прототипов</li>
-            <li>
-              Можно добавлять методы в прототипы (не рекомендуется для
-              встроенных объектов)
-            </li>
-          </ul>
+              <h4>Наследование через прототипы:</h4>
+              <ul>
+                <li>Объекты наследуют свойства и методы от своих прототипов</li>
+                <li>Поиск свойств идет по цепочке прототипов</li>
+                <li>
+                  Можно добавлять методы в прототипы (не рек��мендуется для
+                  встроенных объектов)
+                </li>
+              </ul>
 
-          <h3>Ключевое слово super</h3>
-          <p>
-            super исполь��уется в классах для доступа к методам и свойствам
-            родительского класса.
-          </p>
+              <h3>Ключевое слово super</h3>
+              <p>
+                super используется в классах для доступа к методам и свойствам
+                родительского класса.
+              </p>
 
-          <pre><code class="language-javascript">class Animal {
+              <pre><code class="language-javascript">class Animal {
     constructor(name) {
         this.name = name;
     }
@@ -1409,7 +1592,7 @@ console.log(rabbit.eats); // true (свойство взято из протот
 
 class Dog extends Animal {
     constructor(name) {
-        super(name); // Обязательный вызов конструктора родителя
+        super(name); // Обътельный вызов конструктора родителя
     }
     
     speak() {
@@ -1418,20 +1601,20 @@ class Dog extends Animal {
     }
 }</code></pre>
 
-          <h4>Особенности работы this:</h4>
-          <ul>
-            <li>Значение this определяется во время выполнения</li>
-            <li>
-              При использовании super контекст this сохраняется для текущего
-              объекта
-            </li>
-            <li>
-              Методы call, apply и bind позволяют управлять контекстом
-              выполнения
-            </li>
-          </ul>
+              <h4>Особенности работы this:</h4>
+              <ul>
+                <li>Значение this определяется во время выполнения</li>
+                <li>
+                  При использовании super контекст this сохраняется для текущего
+                  объекта
+                </li>
+                <li>
+                  Методы call, apply и bind позволяют управлять контекстом
+                  выполнения
+                </li>
+              </ul>
 
-          <pre><code class="language-javascript">// Пример управления контекстом
+              <pre><code class="language-javascript">// Пример управления контекстом
 function greet() {
     console.log(`Привет, я ${this.name}`);
 }
@@ -1442,33 +1625,73 @@ greet.call(person);  // Привет, я Иван
 greet.apply(person); // То же самое
 const boundGreet = greet.bind(person); // Создает новую функцию с привязанным контекстом
 boundGreet(); // Привет, я Иван</code></pre>
-        </div>
-      </section>
-
-      <section class="section">
-        <h2>Дневник обучения</h2>
-        <div class="card">
-          <div class="diary-container">
-            <h3>Итоги дня</h3>
-            <div class="diary-entry">
-              <div class="diary-date">
-                <input type="date" id="entryDate" />
-              </div>
-              <div class="diary-content">
-                <textarea
-                  id="entryContent"
-                  placeholder="Опишите, что вы изучили сегодня..."
-                  rows="5"
-                ></textarea>
-              </div>
-              <button id="saveEntry" class="diary-button">Сохранить</button>
             </div>
+          </section>
 
-            <h3>История записей</h3>
-            <div id="entriesHistory" class="diary-history"></div>
-          </div>
+          <section class="section">
+            <h2>Дневник обучения</h2>
+            <div class="card">
+              <div class="diary-container">
+                <h3>Итоги дня</h3>
+                <div class="diary-entry">
+                  <div class="diary-date">
+                    <input type="date" id="entryDate" />
+                  </div>
+                  <div class="diary-content">
+                    <textarea
+                      id="entryContent"
+                      placeholder="Опишите, что вы изучили сегодня..."
+                      rows="5"
+                    ></textarea>
+                  </div>
+                  <button id="saveEntry" class="diary-button">Сохранить</button>
+                </div>
+
+                <h3>История записей</h3>
+                <div id="entriesHistory" class="diary-history"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>Файлы проекта</h2>
+            <div class="card">
+              <div class="files-container">
+                <div class="files-list">
+                  <h3>Структура проекта</h3>
+                  <ul class="files-tree">
+                    <li class="file" data-file="index.html">index.html</li>
+                    <li class="file" data-file="styles.css">styles.css</li>
+                    <li class="file" data-file="test.js">test.js</li>
+                    <li class="file" data-file="task1.js">task1.js</li>
+                    <li class="file" data-file="difference.js">
+                      difference.js
+                    </li>
+                    <li class="file" data-file="isEqual.js">isEqual.js</li>
+                    <li class="file" data-file="isEqual1.js">isEqual1.js</li>
+                    <li class="file" data-file="proto.js">proto.js</li>
+                    <li class="file" data-file="sortedUniq.js">
+                      sortedUniq.js
+                    </li>
+                    <li class="file" data-file="sortedUniq1.js">
+                      sortedUniq1.js
+                    </li>
+                    <li class="file" data-file="task3.js">task3.js</li>
+                    <li class="file" data-file="task4.js">task4.js</li>
+                  </ul>
+                </div>
+                <div class="file-content">
+                  <h3>
+                    Содержимое файла:
+                    <span id="current-file">Выберите файл</span>
+                  </h3>
+                  <pre><code id="file-code" class="language-javascript">// Выберите файл для просмотра</code></pre>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
+      </main>
     </div>
   </body>
 </html>

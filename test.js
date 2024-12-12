@@ -113,3 +113,102 @@ const greetMaria = createGreeting("Мария");
 greetIvan3();
 greetMaria();
 greetIvan3();
+
+// let obj = {
+//   names: "vasya",
+//   withContext(msg = "default hi!") {
+//     console.log(this.names + " " + msg);
+//     return this;
+//   },
+// };
+// let diffrentContext = {
+//   names: "applyContext",
+// };
+// obj.withContext();
+
+// let func = obj.withContext;
+// func();
+// func.apply(obj);
+// func.apply(diffrentContext, ["hello"]);
+// func.call(diffrentContext, "hello");
+// function ParentPrototype() {
+//   this.sayName = function () {
+//     console.log(this.name + " it`s a prototype methon");
+//   };
+// }
+// function ConstructorPeople(name, age) {
+//   this.name = name;
+//   this.age = age;
+//   this.sayName = function () {
+//     console.log(this.name);
+//   };
+//   prototype = new ParentPrototype();
+// }
+// ConstructorPeople.prototype = new ParentPrototype();
+// let people = new ConstructorPeople("vasya", 18);
+// people.sayName();
+// new ConstructorPeople("maria").sayName();
+
+function Clouser() {
+  let saved = 0; // приватное
+  this.saved = saved; //контекст
+  return {
+    increment: () => {
+      saved++;
+      this.saved = saved;
+      console.log(
+        `Saved incremented to: лексическое окружение:${saved} and контекст:${this.saved}`
+      );
+    },
+    getSaved: function () {
+      console.log(saved + " взяли из лексического окружения"); // Метод для получения значения saved
+    },
+  };
+}
+let func = Clouser();
+const obj2 = {
+  rand: function () {
+    console.log(Math.random());
+  },
+};
+func.increment();
+const obj1 = {
+  func: func,
+  ___proto___: obj2,
+};
+console.log(obj1.func);
+const obj = {
+  logMethod: function () {
+    console.log(this.saved + " взяли из контекста");
+  },
+  ___proto___: obj1,
+};
+console.log(obj);
+let prototypedObj = Object.create(obj);
+Object.setPrototypeOf(obj, obj1);
+prototypedObj.func.increment();
+prototypedObj.func.increment();
+prototypedObj.func.increment();
+prototypedObj.func.increment();
+console.log(prototypedObj.func.getSaved());
+Object.setPrototypeOf(obj1, obj2);
+console.log(prototypedObj);
+prototypedObj.rand();
+func.getSaved();
+func.increment();
+func.getSaved();
+func.increment();
+func.increment();
+func.increment();
+func.getSaved();
+func.getSaved();
+prototypedObj.logMethod();
+let funcWithoutContext = prototypedObj.logMethod;
+funcWithoutContext.bind(func);
+funcWithoutContext();
+func.increment();
+funcWithoutContext(); //берем из контекста
+func.getSaved(); //берем из лексического окружения
+func.increment;
+funcWithoutContext(); //берем из контекста
+func.getSaved(); //берем из лексического окружения
