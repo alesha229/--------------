@@ -14,8 +14,172 @@
       hljs.highlightAll();
     </script>
     <script src="completed-topics.js"></script>
-    <script src="progress.json" type="application/json"></script>
     <script src="task1.js"></script>
+    <script>
+      // Функция для загрузки прогресса
+      async function loadProgress() {
+        try {
+          // Сначала пробуем загрузить из progress.json
+          const response = await fetch("progress.json");
+          if (response.ok) {
+            const data = await response.json();
+            return data;
+          }
+        } catch (error) {
+          console.log(
+            "Не удалось загрузить progress.json, используем localStorage"
+          );
+        }
+
+        // Если не удалось загрузить из JSON, берем из localStorage
+        const savedProgress = localStorage.getItem("learningProgress");
+        if (savedProgress) {
+          return JSON.parse(savedProgress);
+        }
+
+        // Если нигде нет данных, возвращаем пустой объект
+        return {};
+      }
+
+      // Функция для сохранения прогресса
+      function saveProgress(progress) {
+        localStorage.setItem("learningProgress", JSON.stringify(progress));
+      }
+
+      // Инициализация при загрузке страницы
+      document.addEventListener("DOMContentLoaded", async () => {
+        const progress = await loadProgress();
+
+        // Отмечаем изученные темы
+        const checkboxes = document.querySelectorAll(
+          'input[type="checkbox"][data-topic]'
+        );
+        checkboxes.forEach((checkbox) => {
+          const topic = checkbox.dataset.topic;
+          if (progress[topic]) {
+            checkbox.checked = true;
+          }
+
+          checkbox.addEventListener("change", () => {
+            progress[topic] = checkbox.checked;
+            saveProgress(progress);
+            updateProgress();
+          });
+        });
+
+        updateProgress();
+      });
+
+      // Обновление процента прогресса
+      function updateProgress() {
+        const checkboxes = document.querySelectorAll(
+          'input[type="checkbox"][data-topic]'
+        );
+        const total = checkboxes.length;
+        const checked = Array.from(checkboxes).filter(
+          (cb) => cb.checked
+        ).length;
+        const percentage = Math.round((checked / total) * 100);
+
+        const progressInfo = document.querySelector(".progress-info");
+        if (progressInfo) {
+          progressInfo.innerHTML = `
+            <div class="progress-percentage">${percentage}%</div>
+            <div>изучено</div>
+          `;
+        }
+      }
+
+      // Инициализация подсветки кода
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("pre code").forEach((block) => {
+          hljs.highlightBlock(block);
+        });
+      });
+
+      // Работа с дневником
+      document.addEventListener("DOMContentLoaded", () => {
+        const saveButton = document.getElementById("saveEntry");
+        const dateInput = document.getElementById("entryDate");
+        const contentInput = document.getElementById("entryContent");
+        const historyContainer = document.getElementById("diaryHistory");
+
+        // Установка текущей даты
+        const today = new Date().toISOString().split("T")[0];
+        dateInput.value = today;
+
+        // Загрузка истории из localStorage
+        function loadHistory() {
+          const history = JSON.parse(
+            localStorage.getItem("diaryHistory") || "[]"
+          );
+          historyContainer.innerHTML = "";
+
+          history
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .forEach((entry) => {
+              const entryElement = document.createElement("div");
+              entryElement.className = "history-entry";
+              entryElement.innerHTML = `
+                    <div class="history-date">${new Date(
+                      entry.date
+                    ).toLocaleDateString()}</div>
+                    <div class="history-content">${entry.content}</div>
+                  `;
+              historyContainer.appendChild(entryElement);
+            });
+        }
+
+        // Сохранение записи
+        saveButton.addEventListener("click", () => {
+          const date = dateInput.value;
+          const content = contentInput.value;
+
+          if (!content.trim()) {
+            alert("Пожалуйста, введите текст записи");
+            return;
+          }
+
+          const history = JSON.parse(
+            localStorage.getItem("diaryHistory") || "[]"
+          );
+          history.push({ date, content });
+          localStorage.setItem("diaryHistory", JSON.stringify(history));
+
+          contentInput.value = "";
+          loadHistory();
+        });
+
+        // Экспорт дневника
+        const exportButton = document.getElementById("exportDiary");
+        if (exportButton) {
+          exportButton.addEventListener("click", () => {
+            const history = localStorage.getItem("diaryHistory") || "[]";
+            const progress = localStorage.getItem("learningProgress") || "{}";
+
+            const data = {
+              diary: JSON.parse(history),
+              progress: JSON.parse(progress),
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+              type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "learning_data.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          });
+        }
+
+        loadHistory();
+      });
+    </script>
   </head>
   <body>
     <div class="container">
@@ -105,7 +269,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="arrow_functions" />
-                Стрелочные фун��ции, основы
+                Стрелочные функции, основы
               </label>
             </div>
 
@@ -137,7 +301,7 @@
               </label>
             </div>
 
-            <h3>Объ��кты</h3>
+            <h3>Объекты</h3>
             <div class="topic-list">
               <label class="topic-item">
                 <input type="checkbox" data-topic="object_basics" />
@@ -169,7 +333,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="object_to_primitive" />
-                Пребразование объектов в примитивы
+                Преобразование объектов в примитивы
               </label>
             </div>
 
@@ -321,7 +485,7 @@
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="private_protected" />
-                Приватные и защищённы�� методы и свойства
+                Приватные и защищённые методы и свойства
               </label>
               <label class="topic-item">
                 <input type="checkbox" data-topic="extend_natives" />
@@ -479,8 +643,8 @@
             <li><code>let</code> – современный способ объявления</li>
             <li><code>var</code> – устаревший способ объявления</li>
             <li>
-              <code>const</code> – похоже на let, но значение переменной не
-              может изменяться
+              <code>const</code> – похож на let, но значение переменной не может
+              изменяться
             </li>
           </ul>
         </div>
@@ -540,7 +704,7 @@ typeof new Date()   // "object"
 typeof /regex/      // "object"
 typeof function(){} // "function"
 
-// Необъявленные и объявленные переменные
+// Необъявленные и объявлен��ые переменные
 typeof undeclaredVar  // "undefined" (не вызывает ошибку!)
 let declaredVar;
 typeof declaredVar    // "undefined"</code></pre>
@@ -592,7 +756,7 @@ function processValue(value) {
 
 // Ограничения:
 // Не различает разные типы объектов (массивы, даты и т.д.)
-// ��озвращает неправильный результат для null
+// Возвращает неправильный результат для null
 // Не может определить тип NaN (возвращает "number")</code></pre>
         </div>
       </section>
@@ -665,7 +829,7 @@ function processValue(value) {
 
 class Dog extends Animal {
     speak() {
-        console.log(`${this.name} говорит: Гав!`);
+        console.log(`${this.name} гавкает`);
     }
 }</code></pre>
           </div>
@@ -674,7 +838,7 @@ class Dog extends Animal {
             <h4>Полиморфизм</h4>
             <p>
               Возможность использовать объекты с одинаковым интерфейсом без
-              информации о типе и внутренн��й структуре объекта.
+              информации о типе и внутренней структуре объекта.
             </p>
             <pre><code class="language-javascript">class Shape {
     area() {
@@ -754,7 +918,7 @@ function executeQuery(database, sql) {
       <section class="section">
         <h2>Всплытие и зоны видимости переменных</h2>
         <div class="card">
-          <h3>Всплытие (Hoisting)</h3>
+          <h3>Всплытие (hoisting)</h3>
           <p>
             Всплытие (hoisting) - это механизм JavaScript, при котором
             объявления переменных и функций физически перемещаются в начало их
@@ -763,7 +927,7 @@ function executeQuery(database, sql) {
           </p>
 
           <h4>Порядок выполнения кода в JavaScript</h4>
-          <p>JavaScript выпол��яется в два этапа:</p>
+          <p>JavaScript выполняется в два этапа:</p>
           <ol>
             <li>
               <strong>Фаза создания</strong> - создаётся контекст выполнения,
@@ -771,7 +935,7 @@ function executeQuery(database, sql) {
             </li>
             <li>
               <strong>Фаза выполнения</strong> - код выполняется строчно,
-              переменным присваиваются значения
+              переменные присваиваются значения
             </li>
           </ol>
 
@@ -796,7 +960,7 @@ console.log(x);  // 5</code></pre>
 
           <h5>let и const:</h5>
           <ul>
-            <li>То��е всплывают, но остаются в "временной мёртвой зоне"</li>
+            <li>Тоже всплывают, но остаются в "временной мёртвой зоне"</li>
             <li>Нельзя использовать до объявления (получим ReferenceError)</li>
             <li>Имеют блочную область видимости</li>
           </ul>
@@ -830,7 +994,7 @@ function sayHi() {
 
 console.log(sayHi);  // [Function: sayHi]</code></pre>
 
-          <h5>2. Функциональное выражение (Function Expression):</h5>
+          <h5>2. Фунциональное выражение (Function Expression):</h5>
           <ul>
             <li>Всплывает как переменная</li>
             <li>Нельзя вызывать до объявления</li>
@@ -900,7 +1064,7 @@ console.log(p);  // Rectangle { height: 0, width: 0 }</code></pre>
               поведения
             </li>
             <li>
-              Объявляйте функции перед их использованием, несмотря на всплытие
+              Объявляйте функции перед их использованием, несмотря ��а всплытие
             </li>
           </ul>
 
@@ -924,11 +1088,11 @@ let x = 5;
             </li>
             <li>
               <strong>Функциональная область видимости</strong> - переменные
-              доступны только внутр�� функции
+              доступны только внутри функции
             </li>
             <li>
               <strong>Блочная область видимости</strong> - переменные let и
-              const доступны только внутри блока
+              const до��тупны только внутри блока
             </li>
           </ul>
           <pre><code class="language-javascript">let global = 'Я глобальная';
@@ -959,8 +1123,7 @@ console.log(block);      // ReferenceError</code></pre>
         <div class="card">
           <h3>Функции как объекты первого класса</h3>
           <p>
-            В JavaScript функции являются объектами первого класса, что
-            означает:
+            В JavaScript функции являются объектами первого класса, то означает:
           </p>
           <ul>
             <li>Их можно присваивать переменным</li>
@@ -1033,7 +1196,7 @@ user.sayHi(); // "Привет, я Иван"
 
 // Связь с прототипами
 User.prototype.greet = function() {
-    console.log(`Здр��вствуйте, ${this.name}`);
+    console.log(`Здравствуйте, ${this.name}`);
 };</code></pre>
         </div>
 
@@ -1071,7 +1234,7 @@ User.prototype.greet = function() {
           <h4>Как работают замыкания?</h4>
           <p>
             Каждая функция при создании сохраняет ссылку на лексическое
-            окружение, в котором она была создан. Кгда функция создаётся внутри
+            окружение, в котором она была создан. Когда функция создаётся внутри
             другой функции, она сохраняет доступ к переменным внешней функции.
           </p>
           <pre><code class="language-javascript">function createCounter() {
@@ -1099,7 +1262,7 @@ console.log(counter.decrement()); // 1</code></pre>
           <p>
             При каждом вызове <code>createCounter()</code> создаётся новое
             лексическое окружение со своей переменной count. Возвращаемая
-            функция сохраняет ��сылку именно на то окружение, в котором она была
+            функция сохраняет ссылку именно на то окружение, в котором она была
             создана, поэтому разные счётчики работают независимо.
           </p>
 
@@ -1133,7 +1296,7 @@ baz();  // 10</code></pre>
             Когда код пытается получить доступ к переменной, JavaScript ищет её:
           </p>
           <ol>
-            <li>В текущей области ��идимости</li>
+            <li>В текущей области видимости</li>
             <li>Если не находит, ищет во внешней области видимости</li>
             <li>Продолжает поиск вверх до глобальной области</li>
             <li>Если переменная не найдена, возвращает ReferenceError</li>
@@ -1146,7 +1309,7 @@ function outer() {
     function inner() {
         let c = 'из inner';
         
-        // У inner есть доступ ко все�� переменным
+        // У inner есть доступ ко всем переменным
         console.log(c);  // из inner
         console.log(b);  // из outer
         console.log(a);  // глобальная
@@ -1170,7 +1333,7 @@ console.log(c);     // ReferenceError: c is not defined</code></pre>
             Важно понимать, что лексическая область видимости определяется
             статически во время написания кода, а не динамически во время
             выполнения. Это означает, что функция всегда будет иметь доступ к
-            переменным той области, в которой она была опредена, независимо от
+            переменным той области, в которой она была определена, независимо от
             того, где она вызывается.
           </p>
         </div>
@@ -1230,7 +1393,7 @@ console.log(rabbit.eats); // true (свойство взято из протот
 
           <h3>Ключевое слово super</h3>
           <p>
-            super используется в классах для доступа к методам и свойствам
+            super исполь��уется в классах для доступа к методам и свойствам
             родительского класса.
           </p>
 
@@ -1283,7 +1446,7 @@ boundGreet(); // Привет, я Иван</code></pre>
       </section>
 
       <section class="section">
-        <h2>Днев��ик обучения</h2>
+        <h2>Дневник обучения</h2>
         <div class="card">
           <div class="diary-container">
             <h3>Итоги дня</h3>
