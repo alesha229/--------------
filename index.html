@@ -10,11 +10,12 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script>
-      hljs.highlightAll();
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
     <script src="completed-topics.js"></script>
     <script src="task1.js"></script>
+    <script src="files-content.js"></script>
     <script>
       // Функция для генерации оглавления
       function generateTableOfContents() {
@@ -172,7 +173,7 @@
         const today = new Date().toISOString().split("T")[0];
         dateInput.value = today;
 
-        // Загрузка истории ��з localStorage
+        // Загрузка истории из localStorage
         function loadHistory() {
           const history = JSON.parse(
             localStorage.getItem("diaryHistory") || "[]"
@@ -246,20 +247,13 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         const filesList = document.querySelector(".files-tree");
-        const fileContent = document.getElementById("file-code");
+        const fileContentContainer = document.querySelector(".file-content");
         const currentFileName = document.getElementById("current-file");
 
-        // Объект с содержимым файлов для GitHub Pages
-        const filesContent = {
-          "test.js": `// function delay(ms) {
-            //   return new Promise(function (resolve) {
-            //     console.log(1); //обработка промиса
-            //     setTimeout(resolve, ms);
-            //   });
-            // }
-            // ... остальное содержимое test.js`,
-          // ... другие файлы
-        };
+        // Инициализируем highlight.js с нужными языками
+        hljs.configure({
+          languages: ["javascript", "html", "css"],
+        });
 
         // Определяем, находимся ли мы на GitHub Pages
         const isGitHubPages = window.location.hostname.includes("github.io");
@@ -268,18 +262,15 @@
           if (e.target.classList.contains("file")) {
             const fileName = e.target.dataset.file;
 
-            // Убираем активный класс у всех файлов
             document
               .querySelectorAll(".file")
               .forEach((f) => f.classList.remove("active"));
-            // Добавляем активный класс выбранному файлу
             e.target.classList.add("active");
 
             try {
               let content;
 
               if (isGitHubPages) {
-                // На GitHub Pages используем предзагруженное содержимое
                 content = filesContent[fileName];
                 if (!content) {
                   throw new Error(
@@ -287,24 +278,21 @@
                   );
                 }
               } else {
-                // Локально загружаем файлы из правильной директории
                 try {
-                  const response = await fetch(`./src/${fileName}`);
+                  const response = await fetch(`./${fileName}`);
                   if (response.ok) {
                     content = await response.text();
                   } else {
-                    // Пробуем загрузить из корневой директории
-                    const rootResponse = await fetch(`./${fileName}`);
-                    if (rootResponse.ok) {
-                      content = await rootResponse.text();
-                    } else {
-                      throw new Error(
-                        "Файл не найден в локальной файловой системе"
-                      );
+                    content = filesContent[fileName];
+                    if (!content) {
+                      throw new Error("Файл не найден");
                     }
                   }
                 } catch (error) {
-                  throw new Error(`Ошибка загрузки файла: ${error.message}`);
+                  content = filesContent[fileName];
+                  if (!content) {
+                    throw new Error(`Ошибка загрузки файла: ${error.message}`);
+                  }
                 }
               }
 
@@ -317,14 +305,33 @@
                   css: "css",
                 }[extension] || "plaintext";
 
-              fileContent.className = `language-${language}`;
-              fileContent.textContent = content;
+              // Создаем новый pre и code элементы
+              const pre = document.createElement("pre");
+              const code = document.createElement("code");
+
+              // Устанавливаем класс и содержимое
+              code.className = `language-${language}`;
+              code.textContent = content;
+
+              // Собираем элементы
+              pre.appendChild(code);
+
+              // Очищаем и добавляем новый контент
+              const contentArea = fileContentContainer.querySelector("pre");
+              contentArea.parentNode.replaceChild(pre, contentArea);
+
               currentFileName.textContent = fileName;
 
-              // Обновляем подсветку синтаксиса
-              hljs.highlightElement(fileContent);
+              // Применяем подсветку синтаксиса
+              hljs.highlightElement(code);
             } catch (error) {
-              fileContent.textContent = `Ошибка: ${error.message}`;
+              const pre = document.createElement("pre");
+              const code = document.createElement("code");
+              code.textContent = `Ошибка: ${error.message}`;
+              pre.appendChild(code);
+
+              const contentArea = fileContentContainer.querySelector("pre");
+              contentArea.parentNode.replaceChild(pre, contentArea);
             }
           }
         });
@@ -462,7 +469,7 @@
                 </label>
               </div>
 
-              <h3>Об��екты</h3>
+              <h3>Объекты</h3>
               <div class="topic-list">
                 <label class="topic-item">
                   <input type="checkbox" data-topic="object_basics" />
@@ -617,7 +624,7 @@
               <div class="topic-list">
                 <label class="topic-item">
                   <input type="checkbox" data-topic="prototype_inheritance" />
-                  Прототипное наследование
+                  Прототипное насле��ование
                 </label>
                 <label class="topic-item">
                   <input type="checkbox" data-topic="function_prototype" />
@@ -629,7 +636,7 @@
                 </label>
                 <label class="topic-item">
                   <input type="checkbox" data-topic="prototype_methods" />
-                  Методы про��отипов, объекты без ссылки __proto__
+                  Методы прототипов, объекты без ссылки __proto__
                 </label>
               </div>
 
@@ -807,7 +814,7 @@
               </p>
               <ul>
                 <li><code>let</code> – современный способ объявления</li>
-                <li><code>var</code> – устаревший способ объявл��ния</li>
+                <li><code>var</code> – утаревший способ объявления</li>
                 <li>
                   <code>const</code> – похож на let, но значение переменной не
                   может изменяться
@@ -885,7 +892,7 @@ typeof declaredVar    // "undefined"</code></pre>
               <ul>
                 <li>
                   <strong>null:</strong> возвращает "object" - это известная
-                  ош��бка в языке, которую нельзя исправить из-за обратной
+                  ошибка в языке, которую нельзя исправить из-за обратной
                   совместимости
                 </li>
                 <li>
@@ -902,7 +909,7 @@ typeof declaredVar    // "undefined"</code></pre>
                 </li>
               </ul>
 
-              <h4>Практическое применение:</h4>
+              <h4>Прак��ическое применение:</h4>
               <pre><code class="language-javascript">// Проверка на undefined
 if (typeof variable === "undefined") {
     console.log("Переменная не определена");
@@ -930,7 +937,7 @@ function processValue(value) {
 // Ограничения:
 // Не различает разные типы объектов (массивы, даты и т.д.)
 // Возвращает неправильный результат для null
-// Не можт определить тип NaN (возращает "number")</code></pre>
+// Не может определить тип NaN (возращает "number")</code></pre>
             </div>
           </section>
 
@@ -950,7 +957,7 @@ function processValue(value) {
             <h2>Оператор await</h2>
             <div class="card">
               <p>
-                await — это оператор, который испо��ьзуется внутри асинхронной
+                await — это оператор, который используется внутри асинхронной
                 функции для ожидания выполнения промиса. Он приостанавливает
                 выполнение функции до тех пор, пока промис не будет выполнен
                 (разрешен или отклонен).
@@ -1008,7 +1015,7 @@ class Dog extends Animal {
               </div>
 
               <div class="principle">
-                <h4>Полиморфизм</h4>
+                <h4>Поиморфизм</h4>
                 <p>
                   Возможность использовать объекты с одинаковым интерфейсом без
                   информации о типе и внутренней структуре объекта.
@@ -1052,7 +1059,7 @@ class Rectangle extends Shape {
                 </p>
                 <pre><code class="language-javascript">class Database {
     connect() {
-        throw new Error('метод connect должен быть реализован');
+        throw new Error('мето connect должен быть реализован');
     }
     
     query() {
@@ -1094,9 +1101,9 @@ function executeQuery(database, sql) {
               <h3>Всплытие (hoisting)</h3>
               <p>
                 Всплытие (hoisting) - это механизм JavaScript, при котором
-                объявления переменных и функций физически перемещаются в начало
-                их области видимости интерпретатором во время фазы компиляции,
-                до выполнения кода.
+                объявления переменных и функций физически перемещаются начало их
+                области видимости интерпреатором во время фазы компиляции, до
+                выполнения кода.
               </p>
 
               <h4>Порядок выполнения кода в JavaScript</h4>
@@ -1120,8 +1127,8 @@ function executeQuery(database, sql) {
               <h5>var:</h5>
               <ul>
                 <li>Всплывает со значением undefined</li>
-                <li>Доступна во всей области видимости функции</li>
-                <li>Можно использовать до объявления (получим undefined)</li>
+                <li>Доступна во всей области видмости функции</li>
+                <li>Можно использовать ��о объявления (получим undefined)</li>
               </ul>
               <pre><code class="language-javascript">console.log(x);  // undefined
 var x = 5;
@@ -1267,7 +1274,7 @@ let x = 5;
                   доступны веде
                 </li>
                 <li>
-                  <strong>Функциональная область видимости</strong> - переменные
+                  <strong>Функциональная област видимости</strong> - переменные
                   доступны только внутри функции
                 </li>
                 <li>
@@ -1310,7 +1317,7 @@ console.log(block);      // ReferenceError</code></pre>
                 <li>Их можно присваивать переменным</li>
                 <li>Передавать как аргументы другим функциям</li>
                 <li>Возвращать из других функций</li>
-                <li>Хранить в структурах данных</li>
+                <li>Хранить в структурах днных</li>
               </ul>
               <pre><code class="language-javascript">// Функция как значение
 const greeting = function(name) {
@@ -1349,7 +1356,7 @@ const greetFn = user.greet;
 greetFn(); // "Привет, я undefined" - потеря контекста</code></pre>
 
               <h4>Методы привязки контекста</h4>
-              <pre><code class="language-javascript">// bind - создаёт новую функцию с привязанным контекстом
+              <pre><code class="language-javascript">// bind - создаё�� новую функцию с привязанным контекстом
 const boundGreet = user.greet.bind(user);
 
 // call - вызывает функцию с указанным контекстом и аргументами
@@ -1383,7 +1390,7 @@ User.prototype.greet = function() {
 
             <div class="card">
               <h3>Стрелочные функции</h3>
-              <p>Основные отличия о обычных функций:</p>
+              <p>Основные отл��чия о обычных функций:</p>
               <ul>
                 <li>Не имеют своего this (берут из внешнего окружения)</li>
                 <li>Не могут быть использованы как конструкторы</li>
@@ -1415,7 +1422,7 @@ User.prototype.greet = function() {
               <h4>Как работают замыкания?</h4>
               <p>
                 Каждая функция при создании сохраняет ссылку на лексическое
-                окружение, в котором она была создан. Когда функция создаётся
+                окружение, котором она была создан. Когда функция создаётся
                 внутри другой функции, она сохраняет доступ к переменным внешней
                 функции.
               </p>
@@ -1444,11 +1451,11 @@ console.log(counter.decrement()); // 1</code></pre>
               <p>
                 При каждом вызове <code>createCounter()</code> создаётся новое
                 лексическое окружение со своей переменной count. Возвращаемая
-                функция сохраняет ссылку именно на то окружение, в котором она
+                функция сохраняет ссылку именно на то окружение, в котором о��а
                 была создана, поэтому разные счетчики рабтают независимо.
               </p>
 
-              <h4>Лексическая область видимости</h4>
+              <h4>Лексиеская область видимости</h4>
               <p>
                 Лексическая область видимости означает, что доступность
                 переменных определяется тем, где функция была объявлена в коде,
@@ -1480,8 +1487,8 @@ baz();  // 10</code></pre>
               </p>
               <ol>
                 <li>В текущей области видимости</li>
-                <li>Если не находит, ищет во внешней области видимости</li>
-                <li>Продолжает поиск вверх до глобальной области</li>
+                <li>Если не находит, ищет во внешней области видимост</li>
+                <li>Продолжает п поиск вверх до глобалной области</li>
                 <li>Если переменная не найдена, возвращает ReferenceError</li>
               </ol>
               <pre><code class="language-javascript">let a = 'глобальная';
@@ -1540,7 +1547,7 @@ console.log(c);     // ReferenceError: c is not defined</code></pre>
                 </li>
                 <li>
                   <strong>Цепочка прототипов</strong> - последовательность
-                  связанных объектов через [[Prototype]]
+                  связанных бъектов через [[Prototype]]
                 </li>
                 <li>
                   <strong>Встроенные прототипы</strong> - Array.prototype,
@@ -1569,8 +1576,8 @@ console.log(rabbit.eats); // true (свойство взято из протот
                 <li>Объекты наследуют свойства и методы от своих прототипов</li>
                 <li>Поиск свойств идет по цепочке прототипов</li>
                 <li>
-                  Можно добавлять методы в прототипы (не рек��мендуется для
-                  встроенных объектов)
+                  Можно добавлять методы в прототипы (не рекмендуется ля
+                  встроенных объек��ов)
                 </li>
               </ul>
 
@@ -1609,7 +1616,7 @@ class Dog extends Animal {
                   объекта
                 </li>
                 <li>
-                  Методы call, apply и bind позволяют управлять контекстом
+                  Методы call, apply и bind позволяют управлять конт��кстом
                   выполнения
                 </li>
               </ul>

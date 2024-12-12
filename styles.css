@@ -387,6 +387,7 @@ section.section {
 
 .file-content {
   flex: 1;
+  overflow: hidden;
 }
 
 .files-tree {
@@ -414,8 +415,36 @@ section.section {
   margin: 0;
   max-height: 600px;
   overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .file-content pre code {
   padding: 1rem;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Стилизация скроллбара */
+.file-content pre::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.file-content pre::-webkit-scrollbar-track {
+  background: var(--code-background);
+  border-radius: 4px;
+}
+
+.file-content pre::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 4px;
+}
+
+.file-content pre::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
 }
