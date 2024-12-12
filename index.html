@@ -274,7 +274,7 @@
                 content = filesContent[fileName];
                 if (!content) {
                   throw new Error(
-                    "Файл не найден в предзагруженном содержимом"
+                    "Файл не найден в предзаг��уженном содержимом"
                   );
                 }
               } else {
@@ -477,7 +477,7 @@
                 </label>
                 <label class="topic-item">
                   <input type="checkbox" data-topic="object_copy" />
-                  Копирование объектов и ссылки
+                  Копировани�� объектов и ссылки
                 </label>
                 <label class="topic-item">
                   <input type="checkbox" data-topic="garbage_collection" />
@@ -624,7 +624,7 @@
               <div class="topic-list">
                 <label class="topic-item">
                   <input type="checkbox" data-topic="prototype_inheritance" />
-                  Прототипное насле��ование
+                  Прототипное наследование
                 </label>
                 <label class="topic-item">
                   <input type="checkbox" data-topic="function_prototype" />
@@ -742,7 +742,7 @@
               <div class="topic-list">
                 <label class="topic-item">
                   <input type="checkbox" data-topic="modules_intro" />
-                  Модули, введение
+                  Моду��и, введение
                 </label>
                 <label class="topic-item">
                   <input type="checkbox" data-topic="export_import" />
@@ -909,7 +909,7 @@ typeof declaredVar    // "undefined"</code></pre>
                 </li>
               </ul>
 
-              <h4>Прак��ическое применение:</h4>
+              <h4>Практическое применение:</h4>
               <pre><code class="language-javascript">// Проверка на undefined
 if (typeof variable === "undefined") {
     console.log("Переменная не определена");
@@ -944,12 +944,96 @@ function processValue(value) {
           <section class="section">
             <h2>Стрелочные функции</h2>
             <div class="card">
-              <p>Особенности стрелочных функций:</p>
+              <p>
+                Стрелочные функции — это сокращенный синтаксис для объявления
+                функций, введенный в ES6. Они позволяют писать функции более
+                компактно и с более ясным контекстом.
+              </p>
+
+              <h4>Основные отличия от обычных функций:</h4>
               <ul>
-                <li>Не имеют this</li>
-                <li>Не имеют arguments</li>
-                <li>Не могут быть вызваны с new</li>
+                <li>
+                  <strong>Отсутствие собственного контекста this:</strong>
+                  Стрелочные функции наследуют this от родительской области
+                  видимости, что делает их удобными для использования в методах
+                  и коллбеках
+                </li>
+                <li>
+                  <strong>Не могут быть использованы как конструкторы:</strong>
+                  Нельзя вызвать с оператором new
+                </li>
+                <li>
+                  <strong>Не имеют arguments:</strong> Вместо этого используйте
+                  оператор расширения (...)
+                </li>
+                <li>
+                  <strong>Компактный синтаксис:</strong> Особенно удобны для
+                  коротких функций
+                </li>
               </ul>
+
+              <h4>Синтаксис и примеры:</h4>
+              <pre><code class="language-javascript">// Обычная функция vs Стрелочная функция
+function add(a, b) {
+  return a + b;
+}
+
+const addArrow = (a, b) => a + b;
+
+// Один параметр - можно опустить скобки
+const square = x => x * x;
+
+// Без параметров - нужны пустые скобки
+const sayHello = () => 'Привет!';
+
+// Несколько строк - используем фигурные скобки и return
+const multiply = (a, b) => {
+  const result = a * b;
+  return result;
+};</code></pre>
+
+              <h4>Контекст this в стрелочных функциях:</h4>
+              <pre><code class="language-javascript">const user = {
+  name: 'Иван',
+  // Обычная функция теряет контекст
+  delayedGreet: function() {
+    setTimeout(function() {
+      console.log('Привет, ' + this.name); // this.name будет undefined
+    }, 1000);
+  },
+  // Стрелочная функция сохраняет контекст
+  delayedGreetArrow: function() {
+    setTimeout(() => {
+      console.log('Привет, ' + this.name); // this.name будет 'Иван'
+    }, 1000);
+  }
+};</code></pre>
+
+              <h4>Использование с методами массивов:</h4>
+              <pre><code class="language-javascript">const numbers = [1, 2, 3, 4, 5];
+
+// Компактная запись с методами массивов
+const doubled = numbers.map(x => x * 2);
+const evens = numbers.filter(x => x % 2 === 0);
+const sum = numbers.reduce((acc, x) => acc + x, 0);</code></pre>
+
+              <h4>Ограничения и особенности:</h4>
+              <pre><code class="language-javascript">// ❌ Нельзя использовать как конструктор
+const Person = (name) => {
+  this.name = name;
+};
+const person = new Person('John'); // TypeError
+
+// ❌ Нет доступа к arguments
+const args = () => {
+  console.log(arguments); // ReferenceError
+};
+
+// ✅ Используйте rest-параметры вместо arguments
+const args = (...rest) => {
+  console.log(rest); // [1, 2, 3]
+};
+args(1, 2, 3);</code></pre>
             </div>
           </section>
 
@@ -1356,7 +1440,7 @@ const greetFn = user.greet;
 greetFn(); // "Привет, я undefined" - потеря контекста</code></pre>
 
               <h4>Методы привязки контекста</h4>
-              <pre><code class="language-javascript">// bind - создаё�� новую функцию с привязанным контекстом
+              <pre><code class="language-javascript">// bind - создаё новую функцию с привязанным контекстом
 const boundGreet = user.greet.bind(user);
 
 // call - вызывает функцию с указанным контекстом и аргументами
@@ -1390,7 +1474,7 @@ User.prototype.greet = function() {
 
             <div class="card">
               <h3>Стрелочные функции</h3>
-              <p>Основные отл��чия о обычных функций:</p>
+              <p>Основные отличия о обычных функций:</p>
               <ul>
                 <li>Не имеют своего this (берут из внешнего окружения)</li>
                 <li>Не могут быть использованы как конструкторы</li>
@@ -1542,7 +1626,7 @@ console.log(c);     // ReferenceError: c is not defined</code></pre>
               <h4>Основные концепции:</h4>
               <ul>
                 <li>
-                  <strong>[[Prototype]]</strong> - внутреннее свойство объекта,
+                  <strong>[[Prototype]]</strong> - внутреннее свойство объ��кта,
                   доступное через <code>__proto__</code>
                 </li>
                 <li>
@@ -1577,7 +1661,7 @@ console.log(rabbit.eats); // true (свойство взято из протот
                 <li>Поиск свойств идет по цепочке прототипов</li>
                 <li>
                   Можно добавлять методы в прототипы (не рекмендуется ля
-                  встроенных объек��ов)
+                  встроенных объектов)
                 </li>
               </ul>
 
@@ -1616,7 +1700,7 @@ class Dog extends Animal {
                   объекта
                 </li>
                 <li>
-                  Методы call, apply и bind позволяют управлять конт��кстом
+                  Методы call, apply и bind позволяют управлять контекстом
                   выполнения
                 </li>
               </ul>
