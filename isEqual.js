@@ -1,130 +1,112 @@
-//1.Проверяем равны ли объекты по ссылке
-//2.Проверяем примитивные ли типы и сравниваем при помощи ==
-//3.Проверяем одинаковые ли типы. Если типы разные делаем проверку разных типов. Number и String к Number. Boolean если один из то приводим к Boolean
-//4.У типа object свой алогритм сравнения
-//5.Массивы тоже отдельно проверяются
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+//Список функций был взят из тестового isEqual, т.к нужно ограничиться конкретными проверками, тут ещё можно много реализовать
+//Но реализацией занимался самостоятельно там где постфикс1
+//Некоторые из оригинальных функций не были реализованы для сравнения map,set,arraybuffer, т.к их нет в тестовых данных
 function isEqual(value, other) {
+  //Сравнение по ссылке
   if (value === other) return true;
 
-  //Проверка на объект-примитив и наоборот
+  //Сравнение boolean с приведенем типа != boolean
+  //С разных сторон ожидается тип != boolean
   if (isEqualBoolean1(value, other)) return true;
   if (isEqualBoolean1(other, value)) return true;
+
+  //Аналогичное сравнение примитивного типа с объектом
   if (isEqualObjectsAndPrimitives1(value, other)) return true;
   if (isEqualObjectsAndPrimitives1(other, value)) return true;
+
+  //Сравнение undefiend и null
   if (isEqualExeption(other, value)) return true;
 
-  // Если разный тип, вернуть false
+  //Проверка на разные типы т.к разные типы мы обработали остались только одинаковые типы(в теории, если не смотреть шире тестов)
   if (!isEqualTypes1(value, other)) return false;
 
-  // Проверяем строковые значения (Эта проверка нужна для примитивов!)
+  //Сравнение строк
   if (!isEqualStringsValue1(value, other)) return false;
 
+  //Сравнеие символов
   if (isEqualSymbols1(value, other)) return true;
 
+  //Сравнение дат
   const datesResult = isEqualDates(value, other);
   if (datesResult !== undefined) return datesResult;
 
-  // if (isEqualMaps1(value, other)) {
-  //   let [arrValue, arrOther] = GetValueMaps1(value, other);
-  //   return localIsEqual1(arrValue, arrOther);
-  // }
-
-  // if (isEqualSets1(value, other)) {
-  //   let [arrValue, arrOther] = GetValueSets1(value, other);
-  //   return localIsEqual1(arrValue, arrOther);
-  // }
-
-  // Проверяем значение ключей
-  return isEqualObjectsKeys1(value, other);
+  //Последним мы сравниваем объекты т.к все остальное мы обработали
+  return isEqualObjectsValue1(value, other);
 }
+
 function isEqualExeption(value, other) {
-  //Number(0) 0
+  //Очень мозги сделало то что null == undefiend думаю можно было лучше реализовать это в коде
+
+  //Проверка если оба undefiend т.к typeof в обоих случаях выдаст тип undefiend
   if (typeof value == "undefined" && typeof other == "undefined") {
-    console.log(value, other);
     return true;
   }
+  //Проверка если оба null
   if (
     value == null &&
     other == null &&
     typeof value !== "undefined" &&
     typeof other !== "undefined"
   ) {
-    console.log(value, other);
-
     return true;
   }
   return false;
 }
+
 function isEqualObjectsAndPrimitives1(value, other) {
-  //Number(0) 0
+  //Сравнение примитивов и типов относящихся к object, Number(0) такая обертка выдаст object
+
+  //Тут null может попасть под object делаем проверку
   if (
     typeof value == "object" &&
     typeof other != "object" &&
     value !== null &&
     other !== null
   ) {
+    //Сравниваем примитив и обернутый примитив
     if (typeof other != "boolean") {
       if (value !== null && value == other.valueOf()) return true;
     }
   }
   return false;
 }
+
 function isEqualBoolean1(value, other) {
-  //Number(0) 0
+  //Сравнение и обработка boolean типа с приведенем к строке
   if (typeof value == "boolean" && typeof other != "boolean") {
     if (value !== null && value.toString() == other.toString()) return true;
   }
   return false;
 }
+
 function isEqualTypes1(value, other) {
+  //Сравниваем типы т.к обработали разные типы
   return typeof value == typeof other;
 }
+
 function isEqualStringsValue1(value, other) {
+  //Сравниваем с приведенем к строке
   return toString(value) == toString(other);
 }
+
 function isEqualSymbols1(value, other) {
+  //Сравниваем символы
   if (typeof value == "symbol" && typeof other == "symbol") {
     return value.toString() == other.toString() ? true : null;
   }
 }
-// function isEqualTypedArrays1(value, other) {
 
-// }
-// function isEqualMaps1(value, other) {
-//   //
-// }
-// function GetValueMaps1(value, other) {
-//   //
-// }
-// function localIsEqual1(value, other) {
-//   //
-// }
-// function isEqualSets1(value, other) {
-//   //
-// }
-// function GetValueSets1(value, other) {
-//   //
-// }
 function isEqualDates(value, other) {
+  //Сначала проверяем является ли датой. Date это не примитив а объект класса Date и мы проверяем принадлежность к нему
+  //Если бы мы вызвали typeof то получили бы object
   if (value instanceof Date && other instanceof Date) {
-    console.log(value.getTime() == other.getTime());
-
+    //Сравниваем время двух объектов date
     return value.getTime() == other.getTime();
   }
   return undefined;
 }
-function isEqualObjectsKeys1(value, other) {
+
+function isEqualObjectsValue1(value, other) {
   if (
     typeof value == "object" &&
     typeof other == "object" &&
@@ -132,6 +114,14 @@ function isEqualObjectsKeys1(value, other) {
     other !== null
   ) {
     if (value.length == other.length) {
+      //Объясню почему не сравниваем ключи. Сравниваем два входных объекта
+      //Изначально убедившись что длина их одинаковая, этим мы исключаем возможности прохождения проверки
+      //Когда один объект идентичен по всем полям но у второго есть ещё поля, если будут ещё поля то длинна будет разной.
+      //
+      //И дальше сравниваем каждый объект по ключу, если ключ или же значение будет не подходить, то объекты будут не равны.
+      //Тоесть условно у первого объекта ключи которого мы подставляем будет ключ которого нет во втором объекте, тогда мы
+      //не найдем такого значения у второго объекта и он обработается в isEqualExeption. Если же значения по одинаковым ключам
+      //будут разные то мы проверим это в каждом обработчике который у нас есть.
       if (Object.keys(value).every((key) => isEqual(value[key], other[key]))) {
         return true;
       }
@@ -139,6 +129,11 @@ function isEqualObjectsKeys1(value, other) {
   }
   return false;
 }
+
+//
+//Всё что ниже оригинальный код задачи!!!
+//
+
 function localIsEqual(value, other) {
   // Если ссылаются на одно и то же значение, вернуть true
   if (value === other) return true;

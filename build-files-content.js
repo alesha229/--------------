@@ -3,7 +3,6 @@ const path = require("path");
 
 const files = [
   "test.js",
-  "styles.css",
   "task1.js",
   "difference.js",
   "isEqual.js",
@@ -13,7 +12,7 @@ const files = [
   "sortedUniq1.js",
   "task3.js",
   "task4.js",
-  "index.html",
+  "test2.js",
 ];
 
 const filesContent = {};
