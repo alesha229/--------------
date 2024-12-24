@@ -171,11 +171,12 @@ aclean.call(
   ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"],
   ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"]
 );
-aclean.apply(
-  null,
-  ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"],
-  ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"]
-);
+// aclean.apply(
+//   null,
+//   ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"],
+//   ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"]
+// );
+
 // aclean(arr1);
 // let result = [...array]
 // array.forEach(element => {
@@ -199,4 +200,8 @@ func1.b = 1;
 func1("123");
 console.dir(func1);
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+delay(1235).then(() => console.log("резовлнули промис"));
 // console.log(func1.arguments);
