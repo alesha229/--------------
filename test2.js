@@ -176,7 +176,6 @@ aclean.call(
 //   ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"],
 //   ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"]
 // );
-
 // aclean(arr1);
 // let result = [...array]
 // array.forEach(element => {
@@ -200,8 +199,65 @@ func1.b = 1;
 func1("123");
 console.dir(func1);
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-delay(1235).then(() => console.log("резовлнули промис"));
 // console.log(func1.arguments);
+let user = {
+  name: "John",
+  years: 30,
+};
+let { name, age: years, isAdmin = false } = user;
+
+let salaries = {
+  John: 100,
+  Pete: 300,
+  Mary: 250,
+};
+function maxSalaries(salaries) {
+  let max = 0;
+  let maxName = null;
+  for (const [name, salary] of Object.entries(salaries)) {
+    if (max < salary) {
+      maxName = name;
+    }
+  }
+  return maxName;
+}
+console.log(maxSalaries(salaries));
+let date = new Date("2012", "02", "20", "3", "12");
+console.log(date);
+function getWeekDay(date) {
+  switch (date.getDay()) {
+    case 1:
+      return "ПН";
+
+    case 2:
+      return "ВТ";
+
+    case 3:
+      return "СР";
+
+    case 4:
+      return "ЧТ";
+
+    case 5:
+      return "ПТ";
+
+    case 6:
+      return "СБ";
+
+    case 0:
+      return "ВС";
+
+    default:
+      return "error";
+  }
+}
+
+function getDayAgo(date, days) {
+  // let inDate = date; //не не не, так мы передаем ссылку всёравно и изменяем внешний объект))
+  let inDate = new Date(date);
+  inDate.setDate(inDate.getDate() - days);
+  console.log(inDate.getDate());
+  return inDate.getDate();
+}
+
+getDayAgo(new Date(), 523);
