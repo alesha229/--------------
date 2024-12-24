@@ -261,3 +261,84 @@ function getDayAgo(date, days) {
 }
 
 getDayAgo(new Date(), 523);
+
+// Promise.prototype.all = function (iterable) {
+//   const arrResult = [];
+//   for (const i of iterable) {
+//     if (iterable[i] instanceof Promise) {
+//       iterable[i]
+//         .then((result) => {
+//           arrResult.push(result);
+//         })
+//         .catch((error) => {
+//           return Promise.reject(error);
+//         });
+//       // return Promise.resolve()
+//     } else {
+//       return Promise.reject(i + "not a promise");
+//     }
+//   }
+//   return Promise.resolve(arrResult);
+// };
+
+Promise.prototype.all = function (iterable) {
+  return new Promise((resolve, reject) => {
+    const arrResult = [];
+    let count = 0;
+    for (const i of iterable) {
+      if (i instanceof Promise) {
+        i.then((result) => {
+          arrResult.push(result);
+          count++;
+          if (count == iterable.length) {
+            resolve(arrResult);
+          }
+        }).catch((error) => {
+          reject(error);
+          return;
+        });
+      } else {
+        reject(new Error(i + " is not a Promise"));
+        return;
+      }
+    }
+    resolve(arrResult);
+  });
+};
+
+Promise.prototype.race = function (iterable) {
+  return new Promise((resolve, reject) => {
+    let count = 0;
+    for (const i of iterable) {
+      if (i instanceof Promise) {
+        i.then((result) => {
+          count++;
+          resolve(result);
+        }).catch((error) => {
+          reject(error);
+          return;
+        });
+      } else {
+        reject(new Error(i + " is not a Promise"));
+        return;
+      }
+    }
+  });
+};
+
+const promises6 = [Promise.resolve(13), Promise.resolve(15)];
+
+// Ожидаемый результат: [13, 14, 15]
+Promise.race(promises6).then((results) => {
+  console.log(results); // Вывод: Промисы, возвращающие другие промисы: [13, 14, 15]
+});
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+}
+delay(1000).then(() => {
+  console.log("resolved");
+});
