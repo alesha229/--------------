@@ -342,3 +342,45 @@ function delay(ms) {
 delay(1000).then(() => {
   console.log("resolved");
 });
+// let checkIfInstanceOf = function (obj, classFunction) {
+//   console.dir(classFunction.prototype.constructor.name);
+//   console.dir(obj.constructor.name);
+//   if (classFunction.prototype.constructor.name == obj.constructor.name) {
+//     return true;
+//   } else {
+//     findValueInPrototype(
+//       Object.getPrototypeOf(obj),
+//       "name",
+//       classFunction.prototype.constructor.name
+//     );
+//   }
+// };
+// function findValueInPrototype(prototype, key, value) {
+//   console.log(prototype, key, value);
+//   isFinded = false;
+//   Object.getOwnPropertyNames(prototype).forEach((element, index) => {
+//     if (element == key && prototype[element] == value) {
+//       isFinded = true;
+//       return true;
+//     }
+//   });
+//   if (!isFinded && hasOwnProperty(constructor) != null) {
+//     console.dir(prototype.constructor);
+//     findValueInPrototype(prototype.constructor, key, value);
+//   }
+//   return false;
+// }
+// class Animal {}
+// class Dog extends Animal {}
+// console.log(checkIfInstanceOf(new Dog(), Animal));
+// checkIfInstanceOf(new Date(), Date); // true
+
+function filter_list(l) {
+  l.map((num) => parseInt(num, 10));
+  return [...new Set(l.map((num) => parseInt(num, 10)))].filter(
+    (num) => !isNaN(num)
+  );
+}
+console.log(filter_list([1, 2, "a", "b"]));
+console.log(filter_list([1, "a", "b", 0, 15]));
+console.log(filter_list([1, 2, "aasf", "1", "123", 123]));
